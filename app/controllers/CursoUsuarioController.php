@@ -1,0 +1,53 @@
+<?php
+
+require_once __DIR__ . "/../models/CursoUsuarioModel.php";
+require_once __DIR__ . "/../helpers/ApiRespuesta.php";
+require_once __DIR__ . "/../helpers/AuthHelper.php";
+
+use \Firebase\JWT\JWT;
+use \Firebase\JWT\Key;
+class CursoUsuarioController
+{
+    private $cursoUsuarioModel;
+
+    public function __construct()
+    {
+        $this->cursoUsuarioModel = new CursoUsuarioModel();
+    }
+
+    public function apiMisCursos()
+    {
+        if (
+            !AuthHelper::verificarAccesoResponsable(
+                ['tomar_curso'],
+                'curso',
+                'Obtener estructura del curso'
+            )
+        ) {
+            return;
+        }
+
+
+        $secretKey = CLAVE_TOKEN;
+        $sesion = JWT::decode($_COOKIE['sepcon_session_token'], new Key($secretKey, 'HS256'));
+
+        $cursos = $this->cursoUsuarioModel->obtenerMisCursos($sesion->data->id);
+
+        echo ApiRespuesta::exitoso($cursos, "Mis cursos obtenidos exitosamente");
+    }
+
+    public function apiMarcarItemCompletado()
+    {
+        $itemId = $_POST['item_id'] ?? null;
+        $cursoUsuarioId = $_POST['curso_usuario_id'] ?? null;
+
+        if (!$itemId || !$cursoUsuarioId) {
+            echo ApiRespuesta::error("Los parámetros 'item_id' y 'curso_usuario_id' son obligatorios");
+            return;
+        }
+        $actualizado = $this->cursoUsuarioModel->marcarItemCompletado($itemId, $cursoUsuarioId);
+
+        echo ApiRespuesta::exitoso($actualizado, "Marcaddo como completado exitosamente");
+    }
+
+}

@@ -1,0 +1,5 @@
+RewriteEngine On
+
+# Redirigir todas las peticiones a la carpeta public
+RewriteCond %{REQUEST_URI} !^/capacitaciones/public/
+RewriteRule ^(.*)$ public/$1 [L]
