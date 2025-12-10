@@ -5,9 +5,7 @@ require_once __DIR__ . "/../helpers/AuthHelper.php";
 
 class CapacitacionesController
 {
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     public function vistaApp()
     {
@@ -28,7 +26,7 @@ class CapacitacionesController
     {
         if (
             !AuthHelper::verificarAccesoVista(
-                [],
+                ['tomar_curso'],
                 'tomar_curso',
                 'Vista de Tomar Curso'
             )
@@ -63,11 +61,20 @@ class CapacitacionesController
 
     public function vistaMisCursos()
     {
+        if (
+            !AuthHelper::verificarAccesoVista(
+                ['mis_cursos'],
+                'tomar_curso',
+                'Vista de Tomar Curso'
+            )
+        ) {
+            return;
+        }
+
         $vista = 'mis_cursos';
         ob_start();
         include VIEWS_PATH . '/mis_cursos.php';
         $contenido = ob_get_clean();
         include VIEWS_PATH . '/app.php';
     }
-
 }

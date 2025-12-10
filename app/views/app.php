@@ -70,9 +70,13 @@
                         <div class="hidden md:block">
                             <div class="ml-10 flex items-baseline space-x-4">
                                 <a href="inicio"
-                                    class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium">Inicio</a>
+                                    class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'inicio') echo 'border-b-4 border-blue-900'; ?>">
+                                    Inicio
+                                </a>
                                 <a href="cursos"
-                                    class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium">Cursos</a>
+                                    class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'cursos') echo 'border-b-4 border-blue-900'; ?>">
+                                    Cursos
+                                </a>
                                 <template x-if="cargandoSesion">
                                     <div class="flex items-center px-3 py-2 h-8 bg-gray-100 rounded-md">
                                         <span class="text-gray-700 text-sm">Cargando...</span>
@@ -86,8 +90,12 @@
                                 </div>
                                 <div x-show="!cargandoSesion && usuarioLogueado" x-cloak>
                                     <a href="mis_cursos"
-                                        class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium">
+                                        class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'mis_cursos') echo 'border-b-4 border-blue-900'; ?>">
                                         Mis Cursos
+                                    </a>
+                                    <a x-show="usuarioLogueado && usuarioLogueado.accesos && usuarioLogueado.accesos.includes('gestionar_cursos')" href="mis_cursos"
+                                        class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'gestionar_cursos') echo 'border-b-4 border-blue-900'; ?>">
+                                        Gestionar Cursos
                                     </a>
                                     <button @click="cerrarSesion()"
                                         class="bg-red-600 cursor-pointer text-white px-4 py-2 rounded-md text-sm font-medium border hover:bg-white hover:border-red-600 hover:text-red-600">

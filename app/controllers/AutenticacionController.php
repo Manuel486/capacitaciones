@@ -37,7 +37,8 @@ class AutenticacionController
                         "cargo" => $data["dcargo"],
                         "estado" => $data["estado"],
                         "id" => $data["internal"],
-                        "accesos" => ["tomar_curso"]
+                        "accesos" => $data["accesos"],
+                        "roles" => $data["roles"]
                     ]
                 ];
 
@@ -120,7 +121,9 @@ class AutenticacionController
             // $tokenValido = false;
             $respuesta = null;
         }
+        
+        $data = $this->usuarioModel->obtenerInfoUsuarioPorDni($respuesta->dni);
 
-        echo ApiRespuesta::exitoso($respuesta, "Token Verificado", true, true);
+        echo ApiRespuesta::exitoso($data, "Token Verificado", true, true);
     }
 }

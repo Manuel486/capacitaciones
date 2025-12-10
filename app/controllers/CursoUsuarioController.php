@@ -19,7 +19,7 @@ class CursoUsuarioController
     {
         if (
             !AuthHelper::verificarAccesoResponsable(
-                ['tomar_curso'],
+                ['mis_cursos'],
                 'curso',
                 'Obtener estructura del curso'
             )

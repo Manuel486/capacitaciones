@@ -10,7 +10,7 @@ function appComponente() {
     credencialesInvalidas: {
       activo: false,
       mensaje: "",
-    }, 
+    },
     modalDialogo: {
       activo: false,
     },
@@ -34,7 +34,9 @@ function appComponente() {
           this.credencialesInvalidas.activo = false;
         } else {
           this.credencialesInvalidas.activo = true;
-          this.credencialesInvalidas.mensaje = data.mensaje || "Usuario o contraseña incorrectos. Por favor, inténtalo de nuevo.";
+          this.credencialesInvalidas.mensaje =
+            data.mensaje ||
+            "Usuario o contraseña incorrectos. Por favor, inténtalo de nuevo.";
         }
       } catch (error) {
         console.error("Error al iniciar sesión:", error);

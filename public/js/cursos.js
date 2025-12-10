@@ -35,9 +35,10 @@ function cursosComponente() {
                     this.cargando = false;
                     return;
                 }
-
             } catch (error) {
                 console.error('Error al buscar cursos:', error);
+            } finally {
+                this.cargando = false;
             }
         },
         init() {

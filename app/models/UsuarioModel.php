@@ -6,9 +6,7 @@ require_once __DIR__ . "/database/ConexionRRHH.php";
 class UsuarioModel
 {
 
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     public function verificarExistenciaUsuario($usuario, $password)
     {
@@ -32,10 +30,9 @@ class UsuarioModel
                 }
 
                 // Buscar el rol que tiene
-                $sqlRol = "SELECT a.permiso
+                $sqlRol = "SELECT r.nombre
                            FROM usuario_rol ur
-                           INNER JOIN rol_acceso ra ON ra.id_rol = ur.id_rol
-                           INNER JOIN acceso a ON a.id_acceso = ra.id_acceso
+                           INNER JOIN rol r ON r.id_rol = ur.id_rol
                            WHERE ur.id_usuario = :id_usuario";
 
                 $statementRol = $pdoCapacitaciones->prepare($sqlRol);
@@ -54,26 +51,89 @@ class UsuarioModel
                         'id_usuario' => $usuarioData['dni']
                     ]);
 
-                    // Obtener los roles nuevamente
-                    $statementRol->execute([
+                    // Obtener los roles nuevamente con una nueva consulta
+                    $sqlRolNuevo = "SELECT r.nombre
+                                    FROM usuario_rol ur
+                                    INNER JOIN rol r ON r.id_rol = ur.id_rol
+                                    WHERE ur.id_usuario = :id_usuario";
+                    $statementRolNuevo = $pdoCapacitaciones->prepare($sqlRolNuevo);
+                    $statementRolNuevo->execute([
                         'id_usuario' => $usuarioData['dni']
                     ]);
-                    $roles = $statementRol->fetchAll(PDO::FETCH_COLUMN);
+                    $roles = $statementRolNuevo->fetchAll(PDO::FETCH_COLUMN);
                 }
 
                 // Obtener arreglo de accesos
-                $sqlAccesos = "SELECT permiso FROM acceso WHERE permiso IN (" . implode(',', array_map(function ($r) {
-                    return "'" . $r . "'";
-                }, $roles)) . ")";
-                $statementAccesos = $pdoCapacitaciones->prepare($sqlAccesos);
-                $statementAccesos->execute();
+                $accesos = [];
+                if (!empty($roles)) {
+                    $placeholders = implode(',', array_fill(0, count($roles), '?'));
+                    $sqlAccesos = "SELECT DISTINCT a.permiso 
+                                   FROM acceso a
+                                   INNER JOIN rol_acceso ra ON ra.id_acceso = a.id_acceso
+                                   INNER JOIN rol r ON r.id_rol = ra.id_rol
+                                   WHERE r.nombre IN ($placeholders)";
+                    $statementAccesos = $pdoCapacitaciones->prepare($sqlAccesos);
+                    $statementAccesos->execute(array_values($roles));
+                    $accesos = $statementAccesos->fetchAll(PDO::FETCH_COLUMN);
+                }
 
                 $usuarioData['roles'] = $roles;
                 $usuarioData["exitoso"] = true;
+                $usuarioData["accesos"] = $accesos;
                 return $usuarioData;
             }
 
             return ["exitoso" => false, "error" => "Usuario o contraseña incorrectos."];
+        } catch (PDOException $e) {
+            return ["exitoso" => false, "error" => "Error del sistema."];
+        }
+    }
+
+    public function obtenerInfoUsuarioPorDni($dni)
+    {
+        $pdoRRHH = ConexionRRHH::getInstancia()->getConexion();
+        $pdoCapacitaciones = ConexionCapacitaciones::getInstancia()->getConexion();
+        try {
+            $sqlUsuario = "SELECT * FROM tabla_aquarius WHERE dni = :dni";
+            $statementUsuario = $pdoRRHH->prepare($sqlUsuario);
+            $statementUsuario->execute([
+                'dni' => $dni
+            ]);
+            $usuarioData = $statementUsuario->fetch(PDO::FETCH_ASSOC);
+
+            if (!$usuarioData) {
+                return ["exitoso" => false, "error" => "Usuario no encontrado."];
+            }
+
+            // Obtener roles
+            $sqlRol = "SELECT r.nombre
+                       FROM usuario_rol ur
+                       INNER JOIN rol r ON r.id_rol = ur.id_rol
+                       WHERE ur.id_usuario = :dni";
+            $statementRol = $pdoCapacitaciones->prepare($sqlRol);
+            $statementRol->execute([
+                'dni' => $dni
+            ]);
+            $roles = $statementRol->fetchAll(PDO::FETCH_COLUMN);
+
+            // Obtener accesos
+            $accesos = [];
+            if (!empty($roles)) {
+                $placeholders = implode(',', array_fill(0, count($roles), '?'));
+                $sqlAccesos = "SELECT DISTINCT a.permiso 
+                               FROM acceso a
+                               INNER JOIN rol_acceso ra ON ra.id_acceso = a.id_acceso
+                               INNER JOIN rol r ON r.id_rol = ra.id_rol
+                               WHERE r.nombre IN ($placeholders)";
+                $statementAccesos = $pdoCapacitaciones->prepare($sqlAccesos);
+                $statementAccesos->execute(array_values($roles));
+                $accesos = $statementAccesos->fetchAll(PDO::FETCH_COLUMN);
+            }
+
+            $usuarioData['roles'] = $roles;
+            $usuarioData['accesos'] = $accesos;
+            $usuarioData['exitoso'] = true;
+            return $usuarioData;
         } catch (PDOException $e) {
             return ["exitoso" => false, "error" => "Error del sistema."];
         }

@@ -182,7 +182,7 @@
                     <div class="bg-white rounded-lg shadow p-6">
                         <template x-if="!cargando && curso">
                             <div>
-                                <img src="public/img/curso.jpg" :alt="" class="w-full h-50 rounded mb-4">
+                                <img src="public/img/curso.jpg" :alt="curso.nombre" class="w-full h-50 rounded mb-4">
                             </div>
                         </template>
                         <template x-if="cargando">

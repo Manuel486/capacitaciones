@@ -41,25 +41,23 @@ class AuthHelper
             exit;
         }
 
-        return true;
+        $accesos = $decoded->data->accesos ?? [];
 
-        // $accesos = $decoded->data->accesos ?? [];
+        foreach ($permisosRequeridos as $permiso) {
+            if (in_array($permiso, $accesos)) {
+                return true;
+            }
+        }
 
-        // // 
-        // foreach ($permisosRequeridos as $permiso) {
-        //     if (in_array($permiso, $accesos)) {
-        //         return true;
-        //     }
-        // }
+        AuditoriaLogger::log(
+            $modulo,
+            "$accion sin permisos",
+            false,
+            "Acceso denegado: no tiene permisos requeridos"
+        );
 
-        // AuditoriaLogger::log(
-        //     $modulo,
-        //     "$accion sin permisos",
-        //     false,
-        //     "Acceso denegado: no tiene permisos requeridos"
-        // );
-        // header("Location: " . BASE_URL . "inicio");
-        // exit;
+        header("Location: " . BASE_URL . "inicio");
+        exit;
     }
 
     public static function verificarAccesoResponsable(array $permisosRequeridos, string $modulo, string $accion): bool
