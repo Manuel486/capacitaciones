@@ -1,6 +1,7 @@
 <?php
 
-require_once '../app/config/config.local.php';
+// require_once '../app/config/config.local.php';
+require_once '../app/config/config.prod.php';
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -34,17 +35,25 @@ route($router, 'GET', '/tomar_curso', 'CapacitacionesController', 'vistaTomarCur
 route($router, 'GET', '/curso', 'CapacitacionesController', 'vistaCurso');
 route($router, 'GET', '/cursos', 'CapacitacionesController', 'vistaCursos');
 route($router, 'GET', '/mis_cursos', 'CapacitacionesController', 'vistaMisCursos');
+route($router, 'GET', '/gestionar_cursos', 'CapacitacionesController', 'vistaGestionarCursos');
+route($router, 'GET', '/formulario_curso', 'CapacitacionesController', 'vistaFormularioCurso');
 
 
 // =============== CURSOS CONTROLLER ===============
 route($router, 'GET', '/api/cursos', 'CursosController', 'apiObtenerTodosLosCurso');
 route($router, 'GET', '/api/curso_detalle', 'CursosController', 'apiObtenerCursoPorId');
+route($router, 'GET', '/api/curso', 'CursosController', 'apiObtenerCursoFormularioPorId');
 route($router, 'GET', '/api/curso_estructura', 'CursosController', 'apiObtenerEstructuraCurso');
 route($router, 'POST', '/api/cursos/buscar', 'CursosController', 'apiCursoBuscarPorTermino');
 route($router, 'POST', '/api/mis_cursos', 'CursoUsuarioController', 'apiMisCursos');
+route($router, 'POST', '/api/formulario_curso', 'CursosController', 'apiFormularioCurso');
 
 // =============== CURSO USUARIO CONTROLLER ===============
 route($router, 'POST', '/api/marcar_completado', 'CursoUsuarioController', 'apiMarcarItemCompletado');
+route($router, 'GET', '/api/obtener_cursos_creados', 'CursoUsuarioController', 'apiObtenerCursosCreados');
+
+// =============== USUARIO CONTROLLER ===============
+route($router, 'GET', '/api/obtener_todos_usuarios', 'UsuariosController', 'apiObtenerTodosLosUsuarios');
 
 $match = $router->match();
 

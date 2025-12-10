@@ -69,8 +69,8 @@
                                 <div class="">
                                     <div
                                         class="bg-white rounded-lg h-full shadow-md hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden hover:shadow-4xl">
-                                        <img :src="curso.imagen || 'public/img/curso.jpg'" alt="Imagen del curso"
-                                            class="h-24 w-full object-cover">
+                                        <img :src="curso.imagen ? 'public/assets/portadas/' + curso.imagen : 'public/assets/portadas/plantilla.jpg'"
+                                            alt="Imagen del curso" class="h-24 object-cover">
                                         <div class="p-2 flex-1 flex flex-col">
                                             <h3 class="text-xs font-bold text-gray-900 mb-1" x-text="curso.nombre"></h3>
                                             <p class="text-gray-600 text-xs mb-1 h-10"
@@ -110,4 +110,4 @@
     </div>
 </div>
 
-<script src="public/js/mis_cursos.js"></script>
+<script src="public/js/mis_cursos.js?v=<?= APP_VERSION ?>"></script>

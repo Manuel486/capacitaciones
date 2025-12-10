@@ -77,4 +77,42 @@ class CapacitacionesController
         $contenido = ob_get_clean();
         include VIEWS_PATH . '/app.php';
     }
+
+    public function vistaGestionarCursos()
+    {
+        if (
+            !AuthHelper::verificarAccesoVista(
+                ['gestionar_cursos'],
+                'gestionar_cursos',
+                'Vista de Gestionar Cursos'
+            )
+        ) {
+            return;
+        }
+
+        $vista = 'gestionar_cursos';
+        ob_start();
+        include VIEWS_PATH . '/gestionar_cursos.php';
+        $contenido = ob_get_clean();
+        include VIEWS_PATH . '/app.php';
+    }
+
+    public function vistaFormularioCurso()
+    {
+        if (
+            !AuthHelper::verificarAccesoVista(
+                ['gestionar_cursos'],
+                'gestionar_cursos',
+                'Vista de Gestionar Cursos'
+            )
+        ) {
+            return;
+        }
+
+        $vista = 'formulario_curso';
+        ob_start();
+        include VIEWS_PATH . '/formulario_curso.php';
+        $contenido = ob_get_clean();
+        include VIEWS_PATH . '/app.php';
+    }
 }

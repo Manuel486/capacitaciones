@@ -35,7 +35,7 @@
                     x-transition:enter-end="opacity-100 translate-y-0"
                     :style="'transition-delay: ' + (index * 100) + 'ms'"
                     class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col overflow-hidden transform hover:-translate-y-1">
-                    <img src="public/img/curso.jpg" alt="" class="h-48 w-full object-cover">
+                    <img :src="curso.imagen ? 'public/assets/portadas/' + curso.imagen : 'public/assets/portadas/plantilla.jpg'" :alt="curso.nombre" class="h-48 w-full object-cover">
                     <div class="p-6 flex-1 flex flex-col">
                         <h3 class="text-xl font-bold text-gray-900 mb-3" x-text="curso.nombre"></h3>
                         <p class="text-gray-600 text-sm mb-4 flex-1 line-clamp-3" x-text="curso.descripcion">
@@ -53,4 +53,4 @@
     </div>
 
 </div>
-<script src="public/js/inicio.js"></script>
+<script src="public/js/inicio.js?v=<?= APP_VERSION ?>"></script>

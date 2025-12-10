@@ -6,7 +6,9 @@ require_once __DIR__ . "/database/ConexionRRHH.php";
 class UsuarioModel
 {
 
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 
     public function verificarExistenciaUsuario($usuario, $password)
     {
@@ -136,6 +138,20 @@ class UsuarioModel
             return $usuarioData;
         } catch (PDOException $e) {
             return ["exitoso" => false, "error" => "Error del sistema."];
+        }
+    }
+
+    public function obtenerTodosLosUsuarios()
+    {
+        $pdo = ConexionRRHH::getInstancia()->getConexion();
+        try {
+            $sql = "SELECT * FROM tabla_aquarius WHERE estado = 'AC'";
+            $statement = $pdo->prepare($sql);
+            $statement->execute();
+            $usuarios = $statement->fetchAll(PDO::FETCH_ASSOC);
+            return $usuarios;
+        } catch (PDOException $e) {
+            return [];
         }
     }
 }

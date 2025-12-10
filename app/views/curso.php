@@ -181,8 +181,8 @@
                 <div class="sticky top-4">
                     <div class="bg-white rounded-lg shadow p-6">
                         <template x-if="!cargando && curso">
-                            <div>
-                                <img src="public/img/curso.jpg" :alt="curso.nombre" class="w-full h-50 rounded mb-4">
+                            <div class="flex items-center justify-center mb-4">
+                                <img :src="curso.imagen ? 'public/assets/portadas/' + curso.imagen : 'public/assets/portadas/plantilla.jpg'" :alt="curso.nombre" class="w-full h-50 rounded mb-4 object-cover">
                             </div>
                         </template>
                         <template x-if="cargando">
@@ -201,4 +201,4 @@
     </div>
 </div>
 
-<script src="public/js/curso.js"></script>
+<script src="public/js/curso.js?v=<?= APP_VERSION ?>"></script>

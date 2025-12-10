@@ -274,4 +274,4 @@
     </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/js-confetti@latest/dist/js-confetti.browser.js"></script>
-<script src="public/js/tomar_curso.js"></script>
+<script src="public/js/tomar_curso.js?v=<?= APP_VERSION ?>"></script>

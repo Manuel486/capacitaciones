@@ -61,12 +61,27 @@ class CursoUsuarioModel
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
-            $query = "SELECT c.id_curso, c.nombre, c.descripcion, cu.fecha_inicio, cu.progreso
+            $query = "SELECT c.id_curso, c.nombre, c.descripcion, c.imagen, cu.fecha_inicio, cu.progreso
                       FROM curso_usuario cu
                       INNER JOIN curso c ON cu.id_curso = c.id_curso
                       WHERE cu.id_usuario = :id_usuario";
             $stmt = $pdo->prepare($query);
             $stmt->execute(['id_usuario' => $idUsuario]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+
+    public function obtenerCursosCreadosPorUsuario($dniUsuario)
+    {
+        $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
+        try {
+            $query = "SELECT c.*
+                      FROM curso c
+                      WHERE c.id_autor = :id_autor";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute(['id_autor' => $dniUsuario]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             return [];

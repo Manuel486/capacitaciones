@@ -12,7 +12,7 @@ class ConexionRRHH
             $pdo->exec("SET CHARACTER SET utf8");
             $this->conexion = $pdo;
         } catch (PDOException $e) {
-            throw new Exception("Error al conectarse a la base de datos de documentos.");
+            throw new Exception("Error al conectarse a la base de datos de rrhh.");
         }
     }
 

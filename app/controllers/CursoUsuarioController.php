@@ -50,4 +50,23 @@ class CursoUsuarioController
         echo ApiRespuesta::exitoso($actualizado, "Marcaddo como completado exitosamente");
     }
 
+    public function apiObtenerCursosCreados(){
+        if (
+            !AuthHelper::verificarAccesoResponsable(
+                ['gestionar_cursos'],
+                'gestionar_cursos',
+                'Obtener cursos creados'
+            )
+        ) {
+            return;
+        }
+
+        $secretKey = CLAVE_TOKEN;
+        $sesion = JWT::decode($_COOKIE['sepcon_session_token'], new Key($secretKey, 'HS256'));
+
+        $cursos = $this->cursoUsuarioModel->obtenerCursosCreadosPorUsuario($sesion->data->dni);
+
+        echo ApiRespuesta::exitoso($cursos, "Cursos creados obtenidos exitosamente");
+    }
+
 }

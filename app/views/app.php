@@ -38,7 +38,8 @@
                                     autocomplete="off"
                                     class="border border-gray-300 rounded-lg w-full py-2.5 px-3 text-sm focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none transition">
                             </div>
-                            <div x-show="credencialesInvalidas.activo" x-cloak class="flex items-center gap-2 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-lg shadow-sm animate-shake">
+                            <div x-show="credencialesInvalidas.activo" x-cloak
+                                class="flex items-center gap-2 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-lg shadow-sm animate-shake">
                                 <i class="fa-solid fa-circle-exclamation text-red-500"></i>
                                 <span x-text="credencialesInvalidas.mensaje"></span>
                             </div>
@@ -70,11 +71,13 @@
                         <div class="hidden md:block">
                             <div class="ml-10 flex items-baseline space-x-4">
                                 <a href="inicio"
-                                    class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'inicio') echo 'border-b-4 border-blue-900'; ?>">
+                                    class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'inicio')
+                                        echo 'border-b-4 border-blue-900'; ?>">
                                     Inicio
                                 </a>
                                 <a href="cursos"
-                                    class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'cursos') echo 'border-b-4 border-blue-900'; ?>">
+                                    class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'cursos')
+                                        echo 'border-b-4 border-blue-900'; ?>">
                                     Cursos
                                 </a>
                                 <template x-if="cargandoSesion">
@@ -90,11 +93,14 @@
                                 </div>
                                 <div x-show="!cargandoSesion && usuarioLogueado" x-cloak>
                                     <a href="mis_cursos"
-                                        class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'mis_cursos') echo 'border-b-4 border-blue-900'; ?>">
+                                        class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'mis_cursos')
+                                            echo 'border-b-4 border-blue-900'; ?>">
                                         Mis Cursos
                                     </a>
-                                    <a x-show="usuarioLogueado && usuarioLogueado.accesos && usuarioLogueado.accesos.includes('gestionar_cursos')" href="mis_cursos"
-                                        class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'gestionar_cursos') echo 'border-b-4 border-blue-900'; ?>">
+                                    <a x-show="usuarioLogueado && usuarioLogueado.accesos && usuarioLogueado.accesos.includes('gestionar_cursos')"
+                                        href="gestionar_cursos"
+                                        class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'gestionar_cursos')
+                                            echo 'border-b-4 border-blue-900'; ?>">
                                         Gestionar Cursos
                                     </a>
                                     <button @click="cerrarSesion()"
@@ -113,10 +119,7 @@
 
     </div>
 
-    <script src="public/js/app.js"></script>
-    <!-- <script src="public/js/inicio.js"></script> -->
-    <!-- <script src="public/js/cursos.js"></script> -->
-
+    <script src="public/js/app.js?v=<?= APP_VERSION ?>"></script>
 </body>
 
 </html>
