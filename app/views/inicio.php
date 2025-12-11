@@ -27,22 +27,23 @@
             <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Cursos Destacados</h2>
             <p class="text-gray-600 text-lg">Descubre nuestra selección de cursos más populares</p>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-y-4 gap-x-2">
             <template x-for="(curso, index) in cursos" :key="curso.id_curso">
-                <div
-                    x-transition:enter="transition ease-out duration-500"
+                <div x-transition:enter="transition ease-out duration-500"
                     x-transition:enter-start="opacity-0 translate-y-4"
                     x-transition:enter-end="opacity-100 translate-y-0"
                     :style="'transition-delay: ' + (index * 100) + 'ms'"
-                    class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col overflow-hidden transform hover:-translate-y-1">
-                    <img :src="curso.imagen ? 'public/assets/portadas/' + curso.imagen : 'public/assets/portadas/plantilla.jpg'" :alt="curso.nombre" class="h-48 w-full object-cover">
-                    <div class="p-6 flex-1 flex flex-col">
-                        <h3 class="text-xl font-bold text-gray-900 mb-3" x-text="curso.nombre"></h3>
-                        <p class="text-gray-600 text-sm mb-4 flex-1 line-clamp-3" x-text="curso.descripcion">
+                    class="bg-white rounded-lg h-full shadow-md hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden hover:shadow-4xl">
+                    <img :src="curso.imagen ? 'public/assets/portadas/' + curso.imagen : 'public/assets/portadas/plantilla.jpg'"
+                        :alt="curso.nombre" class="h-30 w-full object-cover">
+                    <div class="px-4 py-2 flex-1 flex flex-col">
+                        <h3 class="text-xs font-bold text-gray-900 mb-1" x-text="curso.nombre"></h3>
+                        <p class="text-gray-600 text-xs mb-4 h-10"
+                            x-text="curso.descripcion.length > 80 ? curso.descripcion.substring(0, 80) + '...' : curso.descripcion">
                         </p>
                         <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-end">
                             <a :href="'/capacitaciones/curso?id_curso=' + curso.id_curso"
-                                class="bg-blue-900 text-white px-6 py-2.5 rounded-lg font-medium border hover:bg-white hover:border-blue-900 hover:text-blue-900 transition">
+                                class="px-3 py-1 hover:bg-blue-900 border border-blue-900 hover:text-blue-900 bg-white hover:text-white rounded transition text-xs font-semibold shadow-sm">
                                 Ver Curso
                             </a>
                         </div>

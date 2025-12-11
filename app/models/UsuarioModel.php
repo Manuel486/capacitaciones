@@ -145,7 +145,11 @@ class UsuarioModel
     {
         $pdo = ConexionRRHH::getInstancia()->getConexion();
         try {
-            $sql = "SELECT * FROM tabla_aquarius WHERE estado = 'AC'";
+            $sql = "SELECT * FROM tabla_aquarius ta
+                    WHERE ta.freg = (
+                        SELECT MAX(freg) FROM tabla_aquarius WHERE dni = ta.dni
+                    )
+                    GROUP BY ta.dni";
             $statement = $pdo->prepare($sql);
             $statement->execute();
             $usuarios = $statement->fetchAll(PDO::FETCH_ASSOC);

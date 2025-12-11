@@ -216,7 +216,7 @@ class CursoModel
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
-            $query = "SELECT id_curso, nombre, descripcion FROM curso WHERE nombre LIKE :termino";
+            $query = "SELECT id_curso, nombre, descripcion, imagen FROM curso WHERE nombre LIKE :termino";
             $stmt = $pdo->prepare($query);
             $likeTermino = '%' . $termino . '%';
             $stmt->execute(['termino' => $likeTermino]);
@@ -313,7 +313,7 @@ class CursoModel
                 }
             }
 
-            return true;
+            return $datosCurso['id_curso'];
         } catch (Exception $e) {
             return false;
         }

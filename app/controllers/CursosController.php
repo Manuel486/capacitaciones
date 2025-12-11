@@ -141,13 +141,13 @@ class CursosController
         $datosCurso['id_autor'] = $sesion->data->dni;
 
         if ($modoEdicion) {
-            $cursoCreado = $this->cursoModel->editarCurso($datosCurso, $idUsuarios);
+            $idCurso = $this->cursoModel->editarCurso($datosCurso, $idUsuarios);
         } else {
-            $cursoCreado = $this->cursoModel->crearNuevoCurso($datosCurso, $idUsuarios);
+            $idCurso = $this->cursoModel->crearNuevoCurso($datosCurso, $idUsuarios);
         }
 
-        if ($cursoCreado) {
-            echo ApiRespuesta::exitoso("", "Curso creado exitosamente");
+        if ($idCurso) {
+            echo ApiRespuesta::exitoso($idCurso, "Curso creado exitosamente");
         } else {
             echo ApiRespuesta::error("Error al crear el curso");
         }

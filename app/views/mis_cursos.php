@@ -1,44 +1,82 @@
 <div x-data="misCursosComponente()">
     <div class="container mx-auto px-4 py-8">
-        <div class="">
-            <div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-lg shadow p-6 sticky top-4">
+                    <div class="flex justify-center mb-4">
+                        <div class="w-32 h-32 rounded-full overflow-hidden border-2 border-blue-900">
+                            <img src="https://static.vecteezy.com/system/resources/previews/006/090/662/non_2x/user-icon-or-logo-isolated-sign-symbol-illustration-free-vector.jpg"
+                                alt="Foto de perfil" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+
+                    <div class="text-center mb-6">
+                        <h2 class="text-md font-bold text-gray-900 mb-1">Juan Pérez García</h2>
+                        <p class="text-sm text-gray-600">DNI: 12345678</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="border-l-4 border-blue-900 pl-3">
+                            <p class="text-xs text-gray-600 uppercase">Cursos Inscritos</p>
+                            <p class="text-2xl font-bold text-gray-900">24</p>
+                        </div>
+
+                        <div class="border-l-4 border-green-600 pl-3">
+                            <p class="text-xs text-gray-600 uppercase">Cursos Completados</p>
+                            <p class="text-2xl font-bold text-gray-900">18</p>
+                        </div>
+
+                        <div class="border-l-4 border-yellow-500 pl-3">
+                            <p class="text-xs text-gray-600 uppercase">En Proceso</p>
+                            <p class="text-2xl font-bold text-gray-900">6</p>
+                        </div>
+
+                        <div class="border-l-4 border-purple-600 pl-3">
+                            <p class="text-xs text-gray-600 uppercase">Total Certificados</p>
+                            <p class="text-2xl font-bold text-gray-900">18</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-6 border-t">
+                        <p class="text-sm font-semibold text-gray-700 mb-2">Progreso General</p>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-blue-900 h-3 rounded-full" style="width: 75%"></div>
+                        </div>
+                        <p class="text-right text-sm font-bold text-gray-700 mt-1">75%</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-9">
                 <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex gap-8 mb-6 font-semibold">
-                        <span 
-                            @click="selectPestania('todos')" 
-                            :class="[
-                                'cursor-pointer transition-colors duration-500',
-                                pestaniaSeleccionada == 'todos' ? 'border-b-4 border-blue-900 pb-1 text-blue-900' : ''
-                            ]"
-                        >
+                    <div class="flex flex-col md:flex-row gap-1 mb-6 font-semibold">
+                        <span @click="selectPestania('todos')" :class="{
+                                'cursor-pointer px-4 py-2 rounded-t-lg font-semibold transition': true,
+                                'bg-blue-900 text-white shadow': pestaniaSeleccionada === 'todos',
+                                'bg-gray-100 text-gray-700 hover:bg-blue-100': pestaniaSeleccionada !== 'todos'
+                            }">
                             Todos los cursos
                         </span>
-                        <span 
-                            @click="selectPestania('obligatorios')"  
-                            :class="[
-                                'cursor-pointer transition-colors duration-500',
-                                pestaniaSeleccionada == 'obligatorios' ? 'border-b-4 border-blue-900 pb-1 text-blue-900' : ''
-                            ]"
-                        >
+                        <span @click="selectPestania('obligatorios')" :class="{
+                                'cursor-pointer px-4 py-2 rounded-t-lg font-semibold transition': true,
+                                'bg-blue-900 text-white shadow': pestaniaSeleccionada === 'obligatorios',
+                                'bg-gray-100 text-gray-700 hover:bg-blue-100': pestaniaSeleccionada !== 'obligatorios'
+                            }">
                             Cursos obligatorios
                         </span>
-                        <span 
-                            @click="selectPestania('proceso')"
-                            :class="[
-                                'cursor-pointer transition-colors duration-500',
-                                pestaniaSeleccionada == 'proceso' ? 'border-b-4 border-blue-900 pb-1 text-blue-900' : ''
-                            ]"
-                        >
+                        <span @click="selectPestania('proceso')" :class="{
+                                'cursor-pointer px-4 py-2 rounded-t-lg font-semibold transition': true,
+                                'bg-blue-900 text-white shadow': pestaniaSeleccionada === 'proceso',
+                                'bg-gray-100 text-gray-700 hover:bg-blue-100': pestaniaSeleccionada !== 'proceso'
+                            }">
                             Cursos en proceso
                         </span>
-                        <span 
-                            @click="selectPestania('completado')"
-                            :class="[
-                                'cursor-pointer transition-colors duration-500',
-                                pestaniaSeleccionada == 'completado' ? 'border-b-4 border-blue-900 pb-1 text-blue-900' : ''
-                            ]"
-                        >
+                        <span @click="selectPestania('completado')" :class="{
+                                'cursor-pointer px-4 py-2 rounded-t-lg font-semibold transition': true,
+                                'bg-blue-900 text-white shadow': pestaniaSeleccionada === 'completado',
+                                'bg-gray-100 text-gray-700 hover:bg-blue-100': pestaniaSeleccionada !== 'completado'
+                            }">
                             Cursos Completados
                         </span>
                     </div>
@@ -47,7 +85,7 @@
                             placeholder="Ingrese el nombre del curso"
                             class="hidden border rounded-md w-full py-1 px-2 text-sm outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition">
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-4">
                         <template x-if="cargando">
                             <template x-for="n in 4" :key="n">
                                 <div
@@ -73,7 +111,7 @@
                                             alt="Imagen del curso" class="h-24 object-cover">
                                         <div class="p-2 flex-1 flex flex-col">
                                             <h3 class="text-xs font-bold text-gray-900 mb-1" x-text="curso.nombre"></h3>
-                                            <p class="text-gray-600 text-xs mb-1 h-10"
+                                            <p class="text-gray-600 text-xs mb-4 h-10"
                                                 x-text="curso.descripcion.length > 80 ? curso.descripcion.substring(0, 80) + '...' : curso.descripcion">
                                             </p>
                                             <div class="flex gap-2 items-center">
@@ -86,10 +124,10 @@
                                             </div>
                                             <div class="flex justify-between items-center mt-3">
                                                 <a :href="'tomar_curso?id_curso=' + curso.id_curso"
-                                                    class="px-3 py-1 bg-blue-900 border hover:border-blue-900 hover:text-blue-900 hover:bg-white text-white rounded transition text-xs font-semibold shadow-sm">
+                                                    class="px-3 py-1 hover:bg-blue-900 border border-blue-900 hover:text-blue-900 bg-white hover:text-white rounded transition text-xs font-semibold shadow-sm">
                                                     Continuar
                                                 </a>
-                                                <a  x-show="curso.progreso == 100"
+                                                <a x-show="curso.progreso == 100"
                                                     href="public/certificados/certificado.pdf" target="_blank"
                                                     class="flex items-center gap-1 text-gray-600 hover:text-blue-700 text-xs font-medium cursor-pointer">
                                                     <i class="fas fa-award text-yellow-400"></i>

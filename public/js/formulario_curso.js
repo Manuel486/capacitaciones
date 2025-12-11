@@ -196,7 +196,7 @@ function nuevoCursoComponente() {
         const data = await respuesta.json();
 
         if (data.exitoso) {
-          window.location.href = "gestionar_cursos";
+          window.location.href = "formulario_curso?id_curso=" + data.respuesta;
         } else {
           console.error("Error al guardar el curso:", data.mensaje);
         }
@@ -305,13 +305,13 @@ function nuevoCursoComponente() {
       const params = new URLSearchParams(window.location.search);
       const id_curso = params.get("id_curso");
       if (!id_curso) {
-        await this.obtenerTodosLosUsuarios();
+        // await this.obtenerTodosLosUsuarios();
         this.cargando = false;
         return;
       }
 
       this.cargando = true;
-      await this.obtenerTodosLosUsuarios();
+      // await this.obtenerTodosLosUsuarios();
 
       try {
         const respuesta = await fetch(`api/curso?id_curso=${id_curso}`);
@@ -357,3 +357,60 @@ function nuevoCursoComponente() {
     },
   };
 }
+
+new Sortable(document.getElementById("main-list"), {
+  animation: 150,
+  group: "temas",
+  handle: ".fa-grip-vertical",
+  fallbackOnBody: true,
+  swapThreshold: 0.65,
+});
+
+document.querySelectorAll("#main-list > li > ul").forEach(function (sublist) {
+  new Sortable(sublist, {
+    animation: 150,
+    group: "clases",
+    handle: ".fa-grip-vertical",
+    fallbackOnBody: true,
+    swapThreshold: 0.65,
+    emptyInsertThreshold: 50,
+    filter: function (evt, item) {
+      // No permitir arrastrar el placeholder
+      return (
+        item.classList.contains("text-gray-400") &&
+        item.querySelector(".border-dashed")
+      );
+    },
+    onMove: function (evt) {
+      const target = evt.to;
+      const placeholder = target.querySelector(".text-gray-400");
+      if (placeholder && placeholder.querySelector(".border-dashed")) {
+        placeholder.style.display = "none";
+      }
+    },
+    onEnd: function (evt) {
+      // Mostrar/ocultar placeholders según contenido
+      [evt.from, evt.to].forEach((list) => {
+        const placeholder = list.querySelector(".text-gray-400");
+        const realItems = Array.from(list.children).filter(
+          (item) =>
+            !item.classList.contains("text-gray-400") ||
+            !item.querySelector(".border-dashed")
+        );
+        if (placeholder) {
+          placeholder.style.display = realItems.length > 0 ? "none" : "";
+        }
+      });
+    },
+  });
+
+  const placeholder = sublist.querySelector(".text-gray-400");
+  const realItems = Array.from(sublist.children).filter(
+    (item) =>
+      !item.classList.contains("text-gray-400") ||
+      !item.querySelector(".border-dashed")
+  );
+  if (placeholder && realItems.length > 0) {
+    placeholder.style.display = "none";
+  }
+});

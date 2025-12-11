@@ -1,7 +1,7 @@
 <?php
 
-// require_once '../app/config/config.local.php';
-require_once '../app/config/config.prod.php';
+require_once '../app/config/config.local.php';
+// require_once '../app/config/config.prod.php';
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -16,7 +16,7 @@ function route($router, $metodo, $path, $controlador, $accion) {
         $ctrl->$accion();
     });
 }
-
+   
 $router->map('GET', '/', function () {
     header('Location: /capacitaciones/inicio');
     exit;
