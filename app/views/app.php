@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
         [x-cloak] {
             display: none !important;
@@ -71,14 +71,12 @@
                         </div>
                         <div class="hidden md:block">
                             <div class="ml-10 flex items-baseline space-x-4">
-                                <a href="inicio"
-                                    class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'inicio')
-                                        echo 'border-b-4 border-blue-900'; ?>">
+                                <a href="inicio" class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'inicio')
+                                    echo 'border-b-4 border-blue-900'; ?>">
                                     Inicio
                                 </a>
-                                <a href="cursos"
-                                    class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'cursos')
-                                        echo 'border-b-4 border-blue-900'; ?>">
+                                <a href="cursos" class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'cursos')
+                                    echo 'border-b-4 border-blue-900'; ?>">
                                     Cursos
                                 </a>
                                 <template x-if="cargandoSesion">
@@ -93,14 +91,12 @@
                                     </button>
                                 </div>
                                 <div x-show="!cargandoSesion && usuarioLogueado" x-cloak>
-                                    <a href="mis_cursos"
-                                        class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'mis_cursos')
-                                            echo 'border-b-4 border-blue-900'; ?>">
+                                    <a href="mis_cursos" class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'mis_cursos')
+                                        echo 'border-b-4 border-blue-900'; ?>">
                                         Mis Cursos
                                     </a>
                                     <a x-show="usuarioLogueado && usuarioLogueado.accesos && usuarioLogueado.accesos.includes('gestionar_cursos')"
-                                        href="gestionar_cursos"
-                                        class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'gestionar_cursos')
+                                        href="gestionar_cursos" class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'gestionar_cursos')
                                             echo 'border-b-4 border-blue-900'; ?>">
                                         Gestionar Cursos
                                     </a>

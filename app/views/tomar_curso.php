@@ -95,7 +95,7 @@
                         <template x-if="item_actual.tipo === 'clase'">
                             <div class="bg-black">
                                 <video class="w-full h-100" controls controlsList="nodownload"
-                                    :src="item_actual.detalle.video_url ?? 'public/videos/prueba.mp4'">
+                                    :src="'api/obtener_video?nombre=' + item_actual.detalle.video">
                                     Tu navegador no soporta el elemento de video.
                                 </video>
                             </div>

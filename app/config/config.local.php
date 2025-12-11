@@ -3,6 +3,7 @@
 define("VIEWS_PATH", __DIR__ . "/../views/");
 define("CONTROLLERS_PATH", __DIR__ . "/../controllers/");
 define("PORTADAS", __DIR__ . "/../../public/assets/portadas/");
+define("VIDEOS", __DIR__ . "/../videos/");
 define("DATABASE_CAPACITACIONES_URL","mysql:dbname=capacitaciones;host=localhost");
 define("DATABASE_CAPACITACIONES_USER","root");
 define("DATABASE_CAPACITACIONES_PASSWORD","");

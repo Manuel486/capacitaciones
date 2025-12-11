@@ -47,6 +47,10 @@ route($router, 'GET', '/api/curso_estructura', 'CursosController', 'apiObtenerEs
 route($router, 'POST', '/api/cursos/buscar', 'CursosController', 'apiCursoBuscarPorTermino');
 route($router, 'POST', '/api/mis_cursos', 'CursoUsuarioController', 'apiMisCursos');
 route($router, 'POST', '/api/formulario_curso', 'CursosController', 'apiFormularioCurso');
+route($router, 'POST', '/api/guardar_tema', 'CursosController', 'apiGuardarTema');
+route($router, 'POST', '/api/guardar_clase', 'CursosController', 'apiGuardarClase');
+route($router, 'POST', '/api/guardar_anuncio', 'CursosController', 'apiGuardarAnuncio');
+
 
 // =============== CURSO USUARIO CONTROLLER ===============
 route($router, 'POST', '/api/marcar_completado', 'CursoUsuarioController', 'apiMarcarItemCompletado');
@@ -54,6 +58,9 @@ route($router, 'GET', '/api/obtener_cursos_creados', 'CursoUsuarioController', '
 
 // =============== USUARIO CONTROLLER ===============
 route($router, 'GET', '/api/obtener_todos_usuarios', 'UsuariosController', 'apiObtenerTodosLosUsuarios');
+
+// =============== VIDEOS CONTROLLER ===============
+route($router, 'GET', '/api/obtener_video', 'VideosController', 'apiObtenerVideoPorNombre');
 
 $match = $router->match();
 

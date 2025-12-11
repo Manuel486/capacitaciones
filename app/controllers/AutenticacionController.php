@@ -36,7 +36,7 @@ class AutenticacionController
                         "dni" => $data["dni"],
                         "cargo" => $data["dcargo"],
                         "estado" => $data["estado"],
-                        "id" => $data["internal"],
+                        "id" => $data["dni"],
                         "accesos" => $data["accesos"],
                         "roles" => $data["roles"]
                     ]

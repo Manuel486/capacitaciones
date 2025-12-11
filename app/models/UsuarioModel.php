@@ -149,7 +149,8 @@ class UsuarioModel
                     WHERE ta.freg = (
                         SELECT MAX(freg) FROM tabla_aquarius WHERE dni = ta.dni
                     )
-                    GROUP BY ta.dni";
+                    GROUP BY ta.dni
+                    ORDER BY ta.apellidos, ta.nombres";
             $statement = $pdo->prepare($sql);
             $statement->execute();
             $usuarios = $statement->fetchAll(PDO::FETCH_ASSOC);

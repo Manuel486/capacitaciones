@@ -1,5 +1,6 @@
 function nuevoCursoComponente() {
   return {
+    inputDefinitivo: "sss",
     cargando: true,
     curso: {
       nombre: "",
@@ -8,6 +9,43 @@ function nuevoCursoComponente() {
       dificultad: "principiante",
       duracion: 0,
       acceso_libre: 1,
+      temas: [],
+    },
+    temaSeleccionado: {
+      id_tema: null,
+      id_curso: null,
+      nombre: "",
+      orden: 0,
+      activo: 1,
+    },
+    claseSeleccionada: {
+      id_clase: null,
+      id_tema: null,
+      id_item: null,
+      titulo: "",
+      descripcion: "",
+      video: null,
+      activo: 1,
+      orden: 0,
+    },
+    anuncioSeleccionado: {
+      id_anuncio: null,
+      id_tema: null,
+      id_item: null,
+      titulo: "",
+      descripcion: "",
+      anuncio: "",
+      activo: 1,
+    },
+    evaluacionSeleccionada: {
+      id_evaluacion: null,
+      id_tema: null,
+      id_item: null,
+      titulo: "",
+      descripcion: "",
+      preguntas: [],
+      activo: 1,
+      orden: 0,
     },
     modoEdicion: false,
     usuariosOriginalesDisponibles: [],
@@ -25,7 +63,10 @@ function nuevoCursoComponente() {
     cargos: [],
     vistaActiva: "descripcionGeneral",
     vistaParticipantes: "todos",
-
+    modalTema: false,
+    modalClase: false,
+    modalAnuncio: false,
+    modalEvaluacion: false,
     async obtenerTodosLosUsuarios() {
       try {
         const respuesta = await fetch("api/obtener_todos_usuarios", {
@@ -46,12 +87,12 @@ function nuevoCursoComponente() {
             ...new Set(
               data.respuesta.map((usuario) => usuario.dcostos).filter((p) => p)
             ),
-          ];
+          ].sort();
           const cargos = [
             ...new Set(
               data.respuesta.map((usuario) => usuario.dcargo).filter((c) => c)
             ),
-          ];
+          ].sort();
           this.proyectos = proyectos;
           this.cargos = cargos;
         }
@@ -59,11 +100,41 @@ function nuevoCursoComponente() {
         console.error("Error en la petición:", error);
       }
     },
-
     activarVista(vista) {
       this.vistaActiva = vista;
-    },
 
+      if (vista === "estructuraCurso") {
+        this.$nextTick(() => {
+          this.inicializarSortable();
+        });
+      }
+    },
+    inicializarSortable() {
+      const mainList = document.getElementById("main-list");
+      if (!mainList || this.curso.temas.length === 0) return;
+
+      new Sortable(mainList, {
+        animation: 150,
+        handle: ".fa-grip-vertical",
+        swapThreshold: 0.65,
+      });
+
+      this.$nextTick(() => {
+        const temaElements = mainList.querySelectorAll(":scope > li");
+
+        temaElements.forEach((temaElement) => {
+          const sublist = temaElement.querySelector("ul");
+          if (sublist) {
+            new Sortable(sublist, {
+              animation: 150,
+              handle: ".fa-grip-vertical",
+              group: "items",
+              swapThreshold: 0.65,
+            });
+          }
+        });
+      });
+    },
     reiniciarSelectores() {
       this.sltProyecto = "todos";
       this.sltCargo = "todos";
@@ -76,39 +147,38 @@ function nuevoCursoComponente() {
       this.vistaParticipantes = vista;
       this.reiniciarSelectores();
     },
+
     inscribirUsuario(usuario) {
       const yaInscrito = this.usuariosInscritos.some(
-        (u) => u.internal === usuario.internal
+        (u) => u.dni === usuario.dni
       );
       if (yaInscrito) return;
 
       this.usuariosInscritos.push({ ...usuario, seleccionado: false });
 
       this.usuariosDisponibles = this.usuariosDisponibles.filter(
-        (u) => u.internal !== usuario.internal
+        (u) => u.dni !== usuario.dni
       );
       this.usuariosOriginalesDisponibles =
-        this.usuariosOriginalesDisponibles.filter(
-          (u) => u.internal !== usuario.internal
-        );
+        this.usuariosOriginalesDisponibles.filter((u) => u.dni !== usuario.dni);
 
       this.usuariosInscritosOriginal = [...this.usuariosInscritos];
       this.totalInscritos = this.usuariosInscritos.length;
       this.personasEncontradas = this.usuariosDisponibles.length;
 
-      this.seleccionados.delete(usuario.internal);
+      this.seleccionados.delete(usuario.dni);
     },
 
     quitarUsuarioInscrito(usuario) {
       this.usuariosInscritos = this.usuariosInscritos.filter(
-        (u) => u.internal !== usuario.internal
+        (u) => u.dni !== usuario.dni
       );
 
       const existeEnDisponibles = this.usuariosDisponibles.some(
-        (u) => u.internal === usuario.internal
+        (u) => u.dni === usuario.dni
       );
       const existeEnOriginales = this.usuariosOriginalesDisponibles.some(
-        (u) => u.internal === usuario.internal
+        (u) => u.dni === usuario.dni
       );
 
       const usuarioLimpio = { ...usuario, seleccionado: false };
@@ -174,20 +244,16 @@ function nuevoCursoComponente() {
         const formData = new FormData();
         formData.append("curso", JSON.stringify(this.curso));
 
-        if (this.curso.imagen) {
+        if (this.curso.imagen && typeof this.curso.imagen === "object") {
           formData.append("imagen", this.curso.imagen);
         }
 
         if (this.usuariosInscritos.length > 0) {
-          const idsUsuarios = this.usuariosInscritos.map((u) => u.internal);
+          const idsUsuarios = this.usuariosInscritos.map((u) => u.dni);
           formData.append("ids_usuarios", JSON.stringify(idsUsuarios));
         }
 
-        if (this.modoEdicion) {
-          formData.append("editar", true);
-        } else {
-          formData.append("editar", false);
-        }
+        formData.append("editar", this.modoEdicion);
 
         const respuesta = await fetch("api/formulario_curso", {
           method: "POST",
@@ -217,7 +283,7 @@ function nuevoCursoComponente() {
 
       if (nuevoEstado) {
         this.seleccionados = new Set(
-          this.usuariosDisponibles.map((u) => u.internal)
+          this.usuariosDisponibles.map((u) => u.dni)
         );
       } else {
         this.seleccionados.clear();
@@ -228,9 +294,9 @@ function nuevoCursoComponente() {
       usuario.seleccionado = !usuario.seleccionado;
 
       if (usuario.seleccionado) {
-        this.seleccionados.add(usuario.internal);
+        this.seleccionados.add(usuario.dni);
       } else {
-        this.seleccionados.delete(usuario.internal);
+        this.seleccionados.delete(usuario.dni);
       }
     },
 
@@ -238,29 +304,27 @@ function nuevoCursoComponente() {
       if (this.seleccionados.size === 0) return;
 
       const usuariosAInscribir = this.usuariosDisponibles.filter((usuario) =>
-        this.seleccionados.has(usuario.internal)
+        this.seleccionados.has(usuario.dni)
       );
 
-      const idsInscritos = new Set(
-        this.usuariosInscritos.map((u) => u.internal)
-      );
+      const idsInscritos = new Set(this.usuariosInscritos.map((u) => u.dni));
 
       const usuariosNuevos = usuariosAInscribir.filter(
-        (u) => !idsInscritos.has(u.internal)
+        (u) => !idsInscritos.has(u.dni)
       );
 
       this.usuariosInscritos.push(
         ...usuariosNuevos.map((u) => ({ ...u, seleccionado: false }))
       );
 
-      const idsARemover = new Set(usuariosNuevos.map((u) => u.internal));
+      const idsARemover = new Set(usuariosNuevos.map((u) => u.dni));
 
       this.usuariosDisponibles = this.usuariosDisponibles.filter(
-        (u) => !idsARemover.has(u.internal)
+        (u) => !idsARemover.has(u.dni)
       );
       this.usuariosOriginalesDisponibles =
         this.usuariosOriginalesDisponibles.filter(
-          (u) => !idsARemover.has(u.internal)
+          (u) => !idsARemover.has(u.dni)
         );
 
       this.usuariosInscritosOriginal = [...this.usuariosInscritos];
@@ -301,23 +365,26 @@ function nuevoCursoComponente() {
       this.personasEncontradas = this.usuariosDisponibles.length;
       this.seleccionados.clear();
     },
+
     async obtenerCursoParaEdicion() {
       const params = new URLSearchParams(window.location.search);
       const id_curso = params.get("id_curso");
+
       if (!id_curso) {
-        // await this.obtenerTodosLosUsuarios();
         this.cargando = false;
         return;
       }
 
       this.cargando = true;
-      // await this.obtenerTodosLosUsuarios();
+      await this.obtenerTodosLosUsuarios();
 
       try {
         const respuesta = await fetch(`api/curso?id_curso=${id_curso}`);
         const data = await respuesta.json();
+
         if (data.exitoso && data.respuesta) {
           this.modoEdicion = true;
+
           this.curso = {
             id_curso: data.respuesta.id_curso || null,
             nombre: data.respuesta.nombre || "",
@@ -326,13 +393,20 @@ function nuevoCursoComponente() {
             dificultad: data.respuesta.dificultad || "principiante",
             duracion: data.respuesta.duracion || 0,
             acceso_libre: data.respuesta.acceso_libre,
+            temas: data.respuesta.temas || [],
           };
+
+          if (Array.isArray(this.curso.temas) && this.curso.temas.length > 0) {
+            this.curso.temas.forEach((tema) => {
+              tema.dropDownActivo = false;
+            });
+          }
 
           if (Array.isArray(data.respuesta.usuariosInscritos)) {
             const inscritosSet = new Set(data.respuesta.usuariosInscritos);
 
             this.usuariosInscritos = this.usuariosOriginalesDisponibles
-              .filter((usuario) => inscritosSet.has(usuario.internal))
+              .filter((usuario) => inscritosSet.has(usuario.dni))
               .map((usuario) => ({ ...usuario, seleccionado: false }));
 
             this.usuariosInscritosOriginal = [...this.usuariosInscritos];
@@ -340,7 +414,7 @@ function nuevoCursoComponente() {
 
             this.usuariosOriginalesDisponibles =
               this.usuariosOriginalesDisponibles.filter(
-                (usuario) => !inscritosSet.has(usuario.internal)
+                (usuario) => !inscritosSet.has(usuario.dni)
               );
             this.usuariosDisponibles = [...this.usuariosOriginalesDisponibles];
             this.personasEncontradas = this.usuariosDisponibles.length;
@@ -352,65 +426,324 @@ function nuevoCursoComponente() {
         this.cargando = false;
       }
     },
+    agregarTema() {
+      const nuevoOrden = this.curso.temas.length + 1;
+      this.temaSeleccionado = {
+        // ← Objeto NUEVO
+        id_tema: null,
+        id_curso: this.curso.id_curso,
+        nombre: "",
+        orden: nuevoOrden,
+        activo: 1,
+      };
+      this.modalTema = true;
+    },
+    editarTema(tema) {
+      this.temaSeleccionado = {
+        id_tema: tema.id_tema,
+        id_curso: this.curso.id_curso,
+        nombre: tema.nombre,
+        orden: tema.orden,
+        activo: tema.activo || 1,
+        items: tema.items || [],
+        dropDownActivo: false,
+      };
+      this.modalTema = true;
+    },
+    async guardarTema() {
+      if (!this.temaSeleccionado.nombre) {
+        alert("Por favor, completa el nombre del tema.");
+        return;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append("tema", JSON.stringify(this.temaSeleccionado));
+        const respuesta = await fetch("api/guardar_tema", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await respuesta.json();
+        if (data.exitoso) {
+          if (this.temaSeleccionado.id_tema) {
+            const temaIndex = this.curso.temas.findIndex(
+              (t) => t.id_tema === this.temaSeleccionado.id_tema
+            );
+            if (temaIndex !== -1) {
+              const itemsActuales = this.curso.temas[temaIndex].items;
+              this.curso.temas[temaIndex] = {
+                ...data.respuesta,
+                items: itemsActuales,
+              };
+            }
+          } else {
+            this.curso.temas.push({
+              ...data.respuesta,
+              items: [],
+            });
+          }
+          this.cerrarModalTema();
+        }
+      } catch (error) {
+        console.error("Error al guardar el tema:", error);
+      }
+    },
+    cerrarModalTema() {
+      this.modalTema = false;
+      this.temaSeleccionado = {
+        id_tema: null,
+        id_curso: null,
+        nombre: "",
+        orden: 0,
+        activo: 1,
+      };
+    },
+    agregarClaseATema(tema) {
+      this.claseSeleccionada.id_tema = tema.id_tema;
+      this.modalClase = true;
+      tema.dropDownActivo = false;
+      const nuevoOrden = tema.items.length + 1;
+      this.claseSeleccionada.orden = nuevoOrden;
+    },
+    editarItem(tema, item) {
+      if (item.tipo === "clase") {
+        this.claseSeleccionada = {
+          id_clase: item.id_referencia,
+          id_tema: tema.id_tema,
+          id_item: item.id_item,
+          titulo: item.detalle.titulo,
+          descripcion: item.detalle.descripcion,
+          video: item.detalle.video,
+          activo: item.detalle.activo,
+          orden: item.orden,
+        };
+        this.modalClase = true;
+        tema.dropDownActivo = false;
+      } else if (item.tipo === "anuncio") {
+        this.anuncioSeleccionado = {
+          id_anuncio: item.id_referencia,
+          id_tema: tema.id_tema,
+          id_item: item.id_item,
+          titulo: item.detalle.titulo,
+          descripcion: item.detalle.descripcion,
+          anuncio: item.detalle.anuncio,
+          activo: item.detalle.activo,
+          orden: item.orden,
+        };
+        this.modalAnuncio = true;
+        tema.dropDownActivo = false;
+      }
+    },
+    agregarAnuncioATema(tema) {
+      this.anuncioSeleccionado.id_tema = tema.id_tema;
+      this.modalAnuncio = true;
+      tema.dropDownActivo = false;
+      const nuevoOrden = tema.items.length + 1;
+      this.anuncioSeleccionado.orden = nuevoOrden;
+    },
+    cerrarModalAnuncio() {
+      this.modalAnuncio = false;
+      this.anuncioSeleccionado = {
+        id_anuncio: null,
+        id_tema: null,
+        id_item: null,
+        titulo: "",
+        descripcion: "",
+        anuncio: "",
+        activo: 1,
+      };
+    },
+    async guardarAnuncio() {
+      if (
+        !this.anuncioSeleccionado.titulo ||
+        !this.anuncioSeleccionado.descripcion ||
+        !this.anuncioSeleccionado.anuncio
+      ) {
+        alert("Por favor, completa todos los campos obligatorios del anuncio.");
+        return;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append("anuncio", JSON.stringify(this.anuncioSeleccionado));
+        const respuesta = await fetch("api/guardar_anuncio", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await respuesta.json();
+        if (data.exitoso) {
+          const tema = this.curso.temas.find(
+            (t) => t.id_tema === this.anuncioSeleccionado.id_tema
+          );
+          if (!tema) return;
+
+          if (this.anuncioSeleccionado.id_item) {
+            const itemIndex = tema.items.findIndex(
+              (i) => i.id_item === this.anuncioSeleccionado.id_item
+            );
+            if (itemIndex !== -1) {
+              tema.items[itemIndex] = data.respuesta;
+            }
+          } else {
+            tema.items.push(data.respuesta);
+          }
+          this.cerrarModalAnuncio();
+        }
+      } catch (error) {
+        console.error("Error al guardar el anuncio:", error);
+      }
+    },
+    agregarEvaluacionATema(tema) {
+      this.evaluacionSeleccionada.id_tema = tema.id_tema;
+      this.modalEvaluacion = true;
+      tema.dropDownActivo = false;
+      const nuevoOrden = tema.items.length + 1;
+      this.evaluacionSeleccionada.orden = nuevoOrden;
+    },
+    cerrarEvaluacionModal() {
+      this.modalEvaluacion = false;
+      this.evaluacionSeleccionada = {
+        id_evaluacion: null,
+        id_tema: null,
+        id_item: null,
+        titulo: "",
+        descripcion: "",
+        preguntas: [],
+        activo: 1,
+        orden: 0,
+      };
+    },
+    async guardarEvaluacion() {
+      if (
+        !this.evaluacionSeleccionada.titulo ||
+        !this.evaluacionSeleccionada.descripcion
+      ) {
+        alert("Por favor, completa todos los campos obligatorios de la evaluación.");
+        return;
+      }
+      try {
+        const formData = new FormData();
+        formData.append("evaluacion", JSON.stringify(this.evaluacionSeleccionada));
+        const respuesta = await fetch("api/guardar_evaluacion", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await respuesta.json();
+        if (data.exitoso) {
+          const tema = this.curso.temas.find(
+            (t) => t.id_tema === this.evaluacionSeleccionada.id_tema
+          );
+          if (!tema) return;
+          if (this.evaluacionSeleccionada.id_item) {
+            const itemIndex = tema.items.findIndex(
+              (i) => i.id_item === this.evaluacionSeleccionada.id_item
+            );
+            if (itemIndex !== -1) {
+              tema.items[itemIndex] = data.respuesta;
+            }
+          } else {
+            tema.items.push(data.respuesta);
+          }
+          this.cerrarEvaluacionModal();
+        }
+      } catch (error) {
+        console.error("Error al guardar la evaluación:", error);
+      }
+    },
+    agregarPregunta() {
+      this.evaluacionSeleccionada.preguntas.push({
+        id_pregunta: null,
+        id_evaluacion: null,
+        contenido: "",
+        alternativas: [],
+      });
+    },
+    eliminarPregunta(indexPregunta) {
+      this.evaluacionSeleccionada.preguntas.splice(indexPregunta, 1);
+    },
+    agregarAlternativa(indexPregunta) {
+      this.evaluacionSeleccionada.preguntas[indexPregunta].alternativas.push({
+        id_alternativa: null,
+        id_pregunta: null,
+        contenido: "",
+        es_respuesta: 0,
+      });
+    },
+    marcarAlternativaCorrecta(indexPregunta, indexAlternativa) {
+      this.evaluacionSeleccionada.preguntas[indexPregunta].alternativas.forEach(
+        (alternativa, idx) => {
+          alternativa.es_respuesta = idx === indexAlternativa ? 1 : 0;
+        }
+      );
+    },
+    eliminarAlternativa(indexPregunta, indexAlternativa) {
+      this.evaluacionSeleccionada.preguntas[indexPregunta].alternativas.splice(
+        indexAlternativa, 1
+      );
+    },
+    cerrarModalClase() {
+      this.modalClase = false;
+      this.claseSeleccionada = {
+        id_clase: null,
+        id_tema: null,
+        id_item: null,
+        titulo: "",
+        descripcion: "",
+        video: null,
+        activo: 1,
+        orden: 0,
+      };
+    },
+    async guardarClase() {
+      if (
+        !this.claseSeleccionada.titulo ||
+        !this.claseSeleccionada.descripcion
+      ) {
+        alert("Por favor, completa todos los campos obligatorios de la clase.");
+        return;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append("clase", JSON.stringify(this.claseSeleccionada));
+        if (
+          this.claseSeleccionada.video &&
+          typeof this.claseSeleccionada.video === "object"
+        ) {
+          formData.append("video", this.claseSeleccionada.video);
+        }
+        const respuesta = await fetch("api/guardar_clase", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await respuesta.json();
+        if (data.exitoso) {
+          const tema = this.curso.temas.find(
+            (t) => t.id_tema === this.claseSeleccionada.id_tema
+          );
+
+          if (!tema) return;
+
+          if (this.claseSeleccionada.id_item) {
+            const itemIndex = tema.items.findIndex(
+              (i) => i.id_item === this.claseSeleccionada.id_item
+            );
+
+            if (itemIndex !== -1) {
+              tema.items[itemIndex] = data.respuesta;
+            }
+          } else {
+            tema.items.push(data.respuesta);
+          }
+
+          this.cerrarModalClase();
+        }
+      } catch (error) {
+        console.error("Error al guardar la clase:", error);
+      }
+    },
     init() {
       this.obtenerCursoParaEdicion();
     },
   };
 }
-
-new Sortable(document.getElementById("main-list"), {
-  animation: 150,
-  group: "temas",
-  handle: ".fa-grip-vertical",
-  fallbackOnBody: true,
-  swapThreshold: 0.65,
-});
-
-document.querySelectorAll("#main-list > li > ul").forEach(function (sublist) {
-  new Sortable(sublist, {
-    animation: 150,
-    group: "clases",
-    handle: ".fa-grip-vertical",
-    fallbackOnBody: true,
-    swapThreshold: 0.65,
-    emptyInsertThreshold: 50,
-    filter: function (evt, item) {
-      // No permitir arrastrar el placeholder
-      return (
-        item.classList.contains("text-gray-400") &&
-        item.querySelector(".border-dashed")
-      );
-    },
-    onMove: function (evt) {
-      const target = evt.to;
-      const placeholder = target.querySelector(".text-gray-400");
-      if (placeholder && placeholder.querySelector(".border-dashed")) {
-        placeholder.style.display = "none";
-      }
-    },
-    onEnd: function (evt) {
-      // Mostrar/ocultar placeholders según contenido
-      [evt.from, evt.to].forEach((list) => {
-        const placeholder = list.querySelector(".text-gray-400");
-        const realItems = Array.from(list.children).filter(
-          (item) =>
-            !item.classList.contains("text-gray-400") ||
-            !item.querySelector(".border-dashed")
-        );
-        if (placeholder) {
-          placeholder.style.display = realItems.length > 0 ? "none" : "";
-        }
-      });
-    },
-  });
-
-  const placeholder = sublist.querySelector(".text-gray-400");
-  const realItems = Array.from(sublist.children).filter(
-    (item) =>
-      !item.classList.contains("text-gray-400") ||
-      !item.querySelector(".border-dashed")
-  );
-  if (placeholder && realItems.length > 0) {
-    placeholder.style.display = "none";
-  }
-});

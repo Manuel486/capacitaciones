@@ -171,6 +171,135 @@ class CursosController
         }
     }
 
+    public function apiGuardarClase()
+    {
+        if (
+            !AuthHelper::verificarAccesoResponsable(
+                ['gestionar_cursos'],
+                'gestionar_cursos',
+                'Guardar nueva clase'
+            )
+        ) {
+            return;
+        }
+
+        $secretKey = CLAVE_TOKEN;
+        $sesion = JWT::decode($_COOKIE['sepcon_session_token'], new Key($secretKey, 'HS256'));
+
+        if (!empty($_POST['clase'])) {
+            $datosClase = json_decode($_POST['clase'], true);
+        } else {
+            $datosClase = null;
+        }
+
+        if (!$datosClase) {
+            echo ApiRespuesta::error("Datos de clase inválidos");
+            return;
+        }
+
+        $video = $_FILES['video'] ?? null;
+
+        if ($video && $video['error'] === UPLOAD_ERR_OK) {
+            // Obtener la extensión del archivo
+            $extension = pathinfo($video['name'], PATHINFO_EXTENSION);
+            $nombreArchivo = generarIdUnico('VIDEO_') . '.' . $extension;
+            $rutaDestino = VIDEOS . $nombreArchivo;
+            if (move_uploaded_file($video['tmp_name'], $rutaDestino)) {
+                $datosClase['video'] = $nombreArchivo;
+            }
+        }
+
+        if($datosClase['id_clase']) {
+            $clase = $this->cursoModel->editarClase($datosClase);
+        } else {
+            $clase = $this->cursoModel->guardarClase($datosClase);
+        }
+
+        if ($clase) {
+            echo ApiRespuesta::exitoso($clase, "Cambios guardados exitosamente");
+        } else {
+            echo ApiRespuesta::error("Error al guardar la clase");
+        }
+    }
+
+    public function apiGuardarTema()
+    {
+        if (
+            !AuthHelper::verificarAccesoResponsable(
+                ['gestionar_cursos'],
+                'gestionar_cursos',
+                'Guardar nuevo tema'
+            )
+        ) {
+            return;
+        }
+
+        $secretKey = CLAVE_TOKEN;
+        $sesion = JWT::decode($_COOKIE['sepcon_session_token'], new Key($secretKey, 'HS256'));
+
+        if (!empty($_POST['tema'])) {
+            $datosTema = json_decode($_POST['tema'], true);
+        } else {
+            $datosTema = null;
+        }
+
+        if (!$datosTema) {
+            echo ApiRespuesta::error("Datos de tema inválidos");
+            return;
+        }
+
+        if($datosTema['id_tema']) {
+            $tema = $this->cursoModel->editarTema($datosTema);
+        } else {
+            $tema = $this->cursoModel->guardarTema($datosTema);
+        }
+
+        if ($tema) {
+            echo ApiRespuesta::exitoso($tema, "Cambios guardados exitosamente");
+        } else {
+            echo ApiRespuesta::error("Error al guardar el tema");
+        }
+    }
+
+    public function apiGuardarAnuncio()
+    {
+        if (
+            !AuthHelper::verificarAccesoResponsable(
+                ['gestionar_cursos'],
+                'gestionar_cursos',
+                'Guardar nuevo anuncio'
+            )
+        ) {
+            return;
+        }
+
+        $secretKey = CLAVE_TOKEN;
+        $sesion = JWT::decode($_COOKIE['sepcon_session_token'], new Key($secretKey, 'HS256'));
+
+        if (!empty($_POST['anuncio'])) {
+            $datosAnuncio = json_decode($_POST['anuncio'], true);
+        } else {
+            $datosAnuncio = null;
+        }
+
+        if (!$datosAnuncio) {
+            echo ApiRespuesta::error("Datos de anuncio inválidos");
+            return;
+        }
+
+        if($datosAnuncio['id_anuncio']) {
+            $anuncio = $this->cursoModel->editarAnuncio($datosAnuncio);
+        } else {
+            $anuncio = $this->cursoModel->guardarAnuncio($datosAnuncio);
+        }
+
+        if ($anuncio) {
+            echo ApiRespuesta::exitoso($anuncio, "Cambios guardados exitosamente");
+        } else {
+            echo ApiRespuesta::error("Error al guardar el anuncio");
+        }
+    }
+
 
 
 }

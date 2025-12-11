@@ -339,10 +339,310 @@ class CursoModel
                 $curso['usuariosInscritos'] = array_map(function ($u) {
                     return $u['id_usuario'];
                 }, $usuarios);
+
+                // Obtener temas e items
+                $queryTemas = "SELECT id_tema, id_curso, nombre, orden, activo FROM tema WHERE id_curso = :id_curso ORDER BY orden ASC";
+                $stmtTemas = $pdo->prepare($queryTemas);
+                $stmtTemas->execute(['id_curso' => $idCurso]);
+                $temas = $stmtTemas->fetchAll(PDO::FETCH_ASSOC);
+
+                if (count($temas) > 0) {
+                    foreach ($temas as $i => $tema) {
+                        $queryItems = "SELECT id_item, id_tema, tipo, id_referencia, orden FROM tema_item WHERE id_tema = :id_tema ORDER BY orden ASC";
+                        $stmtItems = $pdo->prepare($queryItems);
+                        $stmtItems->execute(['id_tema' => $tema['id_tema']]);
+                        $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
+
+                        foreach ($items as $j => $item) {
+                            if ($item['tipo'] === 'clase') {
+                                $queryClase = "SELECT id_clase, titulo, descripcion, video, activo FROM clase WHERE id_clase = :id_clase";
+                                $stmtClase = $pdo->prepare($queryClase);
+                                $stmtClase->execute(['id_clase' => $item['id_referencia']]);
+                                $items[$j]['detalle'] = $stmtClase->fetch(PDO::FETCH_ASSOC);
+                            } elseif ($item['tipo'] === 'anuncio') {
+                                $queryAnuncio = "SELECT id_anuncio, titulo, descripcion, anuncio, activo FROM anuncio WHERE id_anuncio = :id_anuncio";
+                                $stmtAnuncio = $pdo->prepare($queryAnuncio);
+                                $stmtAnuncio->execute(['id_anuncio' => $item['id_referencia']]);
+                                $items[$j]['detalle'] = $stmtAnuncio->fetch(PDO::FETCH_ASSOC);
+                            } elseif ($item['tipo'] === 'evaluacion') {
+                                $queryEvaluacion = "SELECT id_evaluacion, titulo, descripcion, activo FROM evaluacion WHERE id_evaluacion = :id_evaluacion";
+                                $stmtEvaluacion = $pdo->prepare($queryEvaluacion);
+                                $stmtEvaluacion->execute(['id_evaluacion' => $item['id_referencia']]);
+                                $evaluacion = $stmtEvaluacion->fetch(PDO::FETCH_ASSOC);
+
+                                if ($evaluacion) {
+                                    $queryPreguntas = "SELECT id_pregunta, id_evaluacion, contenido FROM pregunta WHERE id_evaluacion = :id_evaluacion";
+                                    $stmtPreguntas = $pdo->prepare($queryPreguntas);
+                                    $stmtPreguntas->execute(['id_evaluacion' => $item['id_referencia']]);
+                                    $preguntas = $stmtPreguntas->fetchAll(PDO::FETCH_ASSOC);
+
+                                    foreach ($preguntas as $k => $pregunta) {
+                                        $queryAlternativas = "SELECT id_alternativa, id_pregunta, contenido, es_respuesta FROM alternativa WHERE id_pregunta = :id_pregunta";
+                                        $stmtAlternativas = $pdo->prepare($queryAlternativas);
+                                        $stmtAlternativas->execute(['id_pregunta' => $pregunta['id_pregunta']]);
+                                        $preguntas[$k]['alternativas'] = $stmtAlternativas->fetchAll(PDO::FETCH_ASSOC);
+                                    }
+
+                                    $evaluacion['preguntas'] = $preguntas;
+                                }
+
+                                $items[$j]['detalle'] = $evaluacion;
+                            }
+                        }
+                        $temas[$i]['items'] = $items;
+                    }
+                    $curso['temas'] = $temas;
+                } else {
+                    $curso['temas'] = [];
+                }
             }
             return $curso;
         } catch (Exception $e) {
             return null;
         }
     }
+
+    public function guardarClase($datosClase)
+    {
+        $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
+        try {
+            $idClase = generarIdUnico("CLA");
+            $query = "INSERT INTO clase (id_clase, titulo, descripcion, video, activo) 
+                          VALUES (:id_clase, :titulo, :descripcion, :video, :activo)";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute([
+                'id_clase' => $idClase,
+                'titulo' => $datosClase['titulo'],
+                'descripcion' => $datosClase['descripcion'],
+                'video' => $datosClase['video'],
+                'activo' => $datosClase['activo']
+            ]);
+
+            // Registrar en tema_item
+            $idItem = generarIdUnico("ITEM");
+            $queryItem = "INSERT INTO tema_item (id_item, id_tema, tipo, id_referencia, orden) 
+                          VALUES (:id_item, :id_tema, :tipo, :id_referencia, :orden)";
+            $stmtItem = $pdo->prepare($queryItem);
+            $stmtItem->execute([
+                'id_item' => $idItem,
+                'id_tema' => $datosClase['id_tema'],
+                'tipo' => 'clase',
+                'id_referencia' => $idClase,
+                'orden' => $datosClase['orden']
+            ]);
+
+            // Obtener el item y su detalle para retornar
+            $item = [
+                'id_item' => $idItem,
+                'id_tema' => $datosClase['id_tema'],
+                'tipo' => 'clase',
+                'id_referencia' => $idClase,
+                'orden' => $datosClase['orden'],
+                'detalle' => [
+                    'id_clase' => $idClase,
+                    'titulo' => $datosClase['titulo'],
+                    'descripcion' => $datosClase['descripcion'],
+                    'video' => $datosClase['video'],
+                    'activo' => $datosClase['activo']
+                ]
+            ];
+
+            return $item;
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
+    public function editarClase($datosClase)
+    {
+        $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
+        try {
+            $query = "UPDATE clase SET titulo = :titulo, descripcion = :descripcion, video = :video, activo = :activo WHERE id_clase = :id_clase";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute([
+                'id_clase' => $datosClase['id_clase'],
+                'titulo' => $datosClase['titulo'],
+                'descripcion' => $datosClase['descripcion'],
+                'video' => $datosClase['video'],
+                'activo' => $datosClase['activo']
+            ]);
+
+            if (isset($datosClase['id_item']) && isset($datosClase['orden'])) {
+                $queryItem = "UPDATE tema_item SET orden = :orden WHERE id_item = :id_item";
+                $stmtItem = $pdo->prepare($queryItem);
+                $stmtItem->execute([
+                    'id_item' => $datosClase['id_item'],
+                    'orden' => $datosClase['orden']
+                ]);
+            }
+
+            $item = [
+                'id_item' => $datosClase['id_item'] ?? null,
+                'id_tema' => $datosClase['id_tema'] ?? null,
+                'tipo' => 'clase',
+                'id_referencia' => $datosClase['id_clase'],
+                'orden' => $datosClase['orden'] ?? null,
+                'detalle' => [
+                    'id_clase' => $datosClase['id_clase'],
+                    'titulo' => $datosClase['titulo'],
+                    'descripcion' => $datosClase['descripcion'],
+                    'video' => $datosClase['video'],
+                    'activo' => $datosClase['activo']
+                ]
+            ];
+
+            return $item;
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
+    public function guardarAnuncio($datosAnuncio)
+    {
+        $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
+        try {
+            $idAnuncio = generarIdUnico("ANA");
+            $query = "INSERT INTO anuncio (id_anuncio, titulo, descripcion, anuncio, activo) 
+                          VALUES (:id_anuncio, :titulo, :descripcion, :anuncio, :activo)";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute([
+                'id_anuncio' => $idAnuncio,
+                'titulo' => $datosAnuncio['titulo'],
+                'descripcion' => $datosAnuncio['descripcion'],
+                'anuncio' => $datosAnuncio['anuncio'],
+                'activo' => $datosAnuncio['activo']
+            ]);
+
+            // Registrar en tema_item
+            $idItem = generarIdUnico("ITEM");
+            $queryItem = "INSERT INTO tema_item (id_item, id_tema, tipo, id_referencia, orden) 
+                          VALUES (:id_item, :id_tema, :tipo, :id_referencia, :orden)";
+            $stmtItem = $pdo->prepare($queryItem);
+            $stmtItem->execute([
+                'id_item' => $idItem,
+                'id_tema' => $datosAnuncio['id_tema'],
+                'tipo' => 'anuncio',
+                'id_referencia' => $idAnuncio,
+                'orden' => $datosAnuncio['orden']
+            ]);
+
+            // Obtener el item y su detalle para retornar
+            $item = [
+                'id_item' => $idItem,
+                'id_tema' => $datosAnuncio['id_tema'],
+                'tipo' => 'anuncio',
+                'id_referencia' => $idAnuncio,
+                'orden' => $datosAnuncio['orden'],
+                'detalle' => [
+                    'id_anuncio' => $idAnuncio,
+                    'titulo' => $datosAnuncio['titulo'],
+                    'descripcion' => $datosAnuncio['descripcion'],
+                    'anuncio' => $datosAnuncio['anuncio'],
+                    'activo' => $datosAnuncio['activo']
+                ]
+            ];
+
+            return $item;
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
+    public function editarAnuncio($datosAnuncio)
+    {
+        $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
+        try {
+            $query = "UPDATE anuncio SET titulo = :titulo, descripcion = :descripcion, anuncio = :anuncio, activo = :activo WHERE id_anuncio = :id_anuncio";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute([
+                'id_anuncio' => $datosAnuncio['id_anuncio'],
+                'titulo' => $datosAnuncio['titulo'],
+                'descripcion' => $datosAnuncio['descripcion'],
+                'anuncio' => $datosAnuncio['anuncio'],
+                'activo' => $datosAnuncio['activo']
+            ]);
+
+            if (isset($datosAnuncio['id_item']) && isset($datosAnuncio['orden'])) {
+                $queryItem = "UPDATE tema_item SET orden = :orden WHERE id_item = :id_item";
+                $stmtItem = $pdo->prepare($queryItem);
+                $stmtItem->execute([
+                    'id_item' => $datosAnuncio['id_item'],
+                    'orden' => $datosAnuncio['orden']
+                ]);
+            }
+
+            $item = [
+                'id_item' => $datosAnuncio['id_item'] ?? null,
+                'id_tema' => $datosAnuncio['id_tema'] ?? null,
+                'tipo' => 'anuncio',
+                'id_referencia' => $datosAnuncio['id_anuncio'],
+                'orden' => $datosAnuncio['orden'] ?? null,
+                'detalle' => [
+                    'id_anuncio' => $datosAnuncio['id_anuncio'],
+                    'titulo' => $datosAnuncio['titulo'],
+                    'descripcion' => $datosAnuncio['descripcion'],
+                    'anuncio' => $datosAnuncio['anuncio'],
+                    'activo' => $datosAnuncio['activo']
+                ]
+            ];
+
+            return $item;
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
+    public function guardarTema($datosTema)
+    {
+        $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
+        try {
+            $idTema = generarIdUnico("TEM");
+            $query = "INSERT INTO tema (id_tema, id_curso, nombre, orden, activo) 
+                          VALUES (:id_tema, :id_curso, :nombre, :orden, :activo)";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute([
+                'id_tema' => $idTema,
+                'id_curso' => $datosTema['id_curso'],
+                'nombre' => $datosTema['nombre'],
+                'orden' => $datosTema['orden'],
+                'activo' => $datosTema['activo']
+            ]);
+
+            return [
+                'id_tema' => $idTema,
+                'id_curso' => $datosTema['id_curso'],
+                'nombre' => $datosTema['nombre'],
+                'orden' => $datosTema['orden'],
+                'activo' => $datosTema['activo']
+            ];
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
+    public function editarTema($datosTema)
+    {
+        $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
+        try {
+            $query = "UPDATE tema SET nombre = :nombre, orden = :orden, activo = :activo WHERE id_tema = :id_tema";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute([
+                'id_tema' => $datosTema['id_tema'],
+                'nombre' => $datosTema['nombre'],
+                'orden' => $datosTema['orden'],
+                'activo' => $datosTema['activo']
+            ]);
+
+            return [
+                'id_tema' => $datosTema['id_tema'],
+                'id_curso' => $datosTema['id_curso'],
+                'nombre' => $datosTema['nombre'],
+                'orden' => $datosTema['orden'],
+                'activo' => $datosTema['activo']
+            ];
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+    
 }

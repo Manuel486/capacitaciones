@@ -27,7 +27,7 @@
             <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Cursos Destacados</h2>
             <p class="text-gray-600 text-lg">Descubre nuestra selección de cursos más populares</p>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-y-4 gap-x-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-y-8 gap-x-4">
             <template x-for="(curso, index) in cursos" :key="curso.id_curso">
                 <div x-transition:enter="transition ease-out duration-500"
                     x-transition:enter-start="opacity-0 translate-y-4"
