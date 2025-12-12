@@ -6,14 +6,20 @@
                 <div class="bg-white rounded-lg shadow p-6 sticky top-4">
                     <div class="flex justify-center mb-4">
                         <div class="w-32 h-32 rounded-full overflow-hidden border-2 border-blue-900">
-                            <img src="https://static.vecteezy.com/system/resources/previews/006/090/662/non_2x/user-icon-or-logo-isolated-sign-symbol-illustration-free-vector.jpg"
-                                alt="Foto de perfil" class="w-full h-full object-cover">
+                            <template x-if="usuarioLogueado">
+                                <img :src="usuarioLogueado.foto ? 'https://rrhhperu.sepcon.net/postulanterrhh/documentos/jpg/' + usuarioLogueado.foto + '.jpg' : 'https://static.vecteezy.com/system/resources/previews/006/090/662/non_2x/user-icon-or-logo-isolated-sign-symbol-illustration-free-vector.jpg'"
+                                alt="" class="w-full h-full object-cover">
+                            </template>
                         </div>
                     </div>
 
                     <div class="text-center mb-6">
-                        <h2 class="text-md font-bold text-gray-900 mb-1">Juan Pérez García</h2>
-                        <p class="text-sm text-gray-600">DNI: 12345678</p>
+                        <template x-if="usuarioLogueado">
+                            <div>
+                                <h2 class="text-md font-bold text-gray-900 mb-1" x-text="usuarioLogueado.nombres"></h2>
+                                <p class="text-sm text-gray-600" x-text="usuarioLogueado.dni"></p>
+                            </div>
+                        </template>
                     </div>
 
                     <div class="space-y-4">

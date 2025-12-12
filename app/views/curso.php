@@ -1,45 +1,47 @@
 <div x-data="cursoDetalleComponente()">
-    <div x-show="modalDialogo.activo" x-cloak class="fixed inset-0 flex items-center justify-center z-50">
-        <div class="fixed inset-0 bg-black/75"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-sm mx-auto z-10">
-            <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div class="flex flex-col gap-2 items-center">
-                    <div class="mx-auto flex items-center justify-center w-12 h-12 rounded-full" :class="{
-                               'bg-red-100': modalDialogo.tipo === 'error',
-                               'bg-yellow-100': modalDialogo.tipo === 'advertencia',
-                               'bg-blue-100': modalDialogo.tipo === 'info',
-                               'bg-green-100': modalDialogo.tipo === 'exito'
-                            }">
-                        <template x-if="modalDialogo.tipo === 'error'">
-                            <i class="fas fa-times-circle text-red-600 text-2xl"></i>
+    <div x-show="modalComentario" x-cloak class="fixed inset-0 flex items-center justify-center z-100 p-4"
+        style="background: rgba(0,0,0,0.5);">
+        <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-4 sm:p-6 relative max-h-[90vh] overflow-y-auto">
+            <button @click="cerrarModalValoracion()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h2 class="text-xl font-bold mb-4 text-gray-800">Comentario</h2>
+            <form class="space-y-4">
+                <div class="flex gap-4">
+                    <label class="block text-gray-700 mb-2 font-bold">Valoración</label>
+                    <div class="flex items-center space-x-1">
+                        <template x-for="star in 5" :key="star">
+                            <button type="button" @click="valoracion = star" @mouseover="hoverValoracion = star"
+                                @mouseleave="hoverValoracion = 0" class="focus:outline-none">
+                                <i class="fas" :class="[
+                                        (hoverValoracion || valoracion) >= star ? 'fa-star text-yellow-400' : 'fa-star text-gray-300',
+                                        'text-2xl'
+                                    ]"></i>
+                            </button>
                         </template>
-                        <template x-if="modalDialogo.tipo === 'advertencia'">
-                            <i class="fas fa-exclamation-triangle text-yellow-600 text-2xl"></i>
-                        </template>
-                        <template x-if="modalDialogo.tipo === 'info'">
-                            <i class="fas fa-info-circle text-blue-600 text-2xl"></i>
-                        </template>
-                        <template x-if="modalDialogo.tipo === 'exito'">
-                            <i class="fas fa-check-circle text-green-600 text-2xl"></i>
-                        </template>
-                    </div>
-                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                        <h3 class="text-center font-semibold text-gray-900" x-text="modalDialogo.titulo"></h3>
-                        <div class="mt-2">
-                            <p class="text-sm text-gray-700 text-center" x-text="modalDialogo.mensaje"></p>
-                        </div>
-                    </div>
-                    <div class="w-full mt-4 items-center justify-center flex">
-                        <button type="button"
-                            class=" cursor-pointer rounded-md hover:bg-blue-900 px-3 py-2 text-sm font-semibold hover:text-white shadow-xs border bg-white border-blue-900 text-blue-900"
-                            @click="cerrarModalDialogo()">Cerrar</button>
+                        <span class="ml-2 text-gray-600" x-text="valoracion"></span>
                     </div>
                 </div>
+                <div>
+                    <textarea x-model="comentario"
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
+                        rows="3" placeholder="Comentario"></textarea>
+                </div>
 
-            </div>
-
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button @click="cerrarModalValoracion()" type="button"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
+                        Cancelar
+                    </button>
+                    <button type="button" @click="guardarValoracion()"
+                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                        Guardar
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+
     <div class="container mx-auto px-4 py-8">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-2">
@@ -55,19 +57,18 @@
                             <div>
                                 <h1 class="text-3xl font-bold mb-4" x-text="curso.nombre"></h1>
                                 <div class="flex items-center gap-6 mb-4">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-yellow-400">★</span>
-                                        <span class="text-yellow-400">★</span>
-                                        <span class="text-yellow-400">★</span>
-                                        <span class="text-yellow-400">★</span>
-                                        <span x-text="curso.rating"></span>
-                                        <span class="text-gray-400"
-                                            x-text="'(' + curso.totalEstudiantes + ' estudiantes)'"></span>
+                                    <div class="flex items-center gap-1 mb-3">
+                                        <template x-for="star in 5" :key="star">
+                                            <i class="fas fa-star text-lg"
+                                                :class="star <= Math.round(curso.valoracion_promedio) ? 'text-yellow-400' : 'text-gray-300'"></i>
+                                        </template>
+                                        <span class="ml-2 text-sm font-medium text-gray-600"
+                                            x-text="(curso.valoracion_promedio ? curso.valoracion_promedio.toFixed(1) : '0') + '/5'"></span>
                                     </div>
-                                    <div>
-                                        <span class="text-gray-400">Creado por</span>
-                                        <span x-text="curso.instructor"></span>
-                                    </div>
+                                </div>
+                                <div>
+                                    <span class="text-gray-400">Creado por</span>
+                                    <span x-text="curso.instructor"></span>
                                 </div>
                             </div>
                         </template>
@@ -148,7 +149,8 @@
                 <div x-show="pestaniaActiva === 'publicaciones'" class="bg-white rounded-lg shadow p-6 mb-6">
                     <h2 class="text-2xl font-bold mb-4">Publicaciones</h2>
                     <div class="space-y-4">
-                        <template x-for="publicacion in (curso?.publicaciones || []).filter(p => p.autor === curso?.instructor)"
+                        <template
+                            x-for="publicacion in (curso?.publicaciones || []).filter(p => p.autor === curso?.instructor)"
                             :key="publicacion.id">
                             <div class="border-b pb-4">
                                 <div class="flex items-center mb-2">
@@ -162,15 +164,56 @@
                 </div>
 
                 <div x-show="pestaniaActiva === 'comentarios'" class="bg-white rounded-lg shadow p-6 mb-6">
-                    <h2 class="text-2xl font-bold mb-4">Comentarios</h2>
-                    <div class="space-y-4">
-                        <template x-for="comentario in (curso?.comentarios || [])" :key="comentario.id">
-                            <div class="border-b pb-4">
-                                <div class="flex items-center mb-2">
-                                    <span class="font-semibold text-gray-900" x-text="comentario.autor"></span>
-                                    <span class="ml-2 text-xs text-gray-500" x-text="comentario.fecha"></span>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">Comentarios</h2>
+                        <button @click="agregarValoracion()"
+                            class="px-4 py-2 bg-white text-blue-900 border border-blue-900 rounded-lg hover:bg-blue-900 hover:text-white transition flex items-center gap-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Agregar comentario</span>
+                        </button>
+                    </div>
+
+                    <div class="space-y-6">
+                        <template x-for="valoracion in (curso?.valoraciones || [])" :key="valoracion.id_valoracion">
+                            <div class="border border-gray-200 rounded-lg p-5 hover:shadow-md transition">
+                                <div class="flex items-start gap-4">
+                                    <div class="flex-shrink-0">
+                                        <div
+                                            class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                            <span x-text="valoracion.nombre_usuario.charAt(0).toUpperCase()"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div>
+                                                <h3 class="font-semibold text-gray-900"
+                                                    x-text="valoracion.nombre_usuario"></h3>
+                                                <span class="text-xs text-gray-500"
+                                                    x-text="valoracion.fecha_registro"></span>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center gap-1 mb-3">
+                                            <template x-for="star in 5" :key="star">
+                                                <i class="fas fa-star text-lg"
+                                                    :class="star <= valoracion.valoracion ? 'text-yellow-400' : 'text-gray-300'"></i>
+                                            </template>
+                                            <span class="ml-2 text-sm font-medium text-gray-600"
+                                                x-text="valoracion.valoracion + '/5'"></span>
+                                        </div>
+
+                                        <p class="text-gray-700 leading-relaxed" x-text="valoracion.comentario"></p>
+                                    </div>
                                 </div>
-                                <p class="text-gray-800" x-text="comentario.texto"></p>
+                            </div>
+                        </template>
+
+                        <template x-if="!curso?.valoraciones || curso.valoraciones.length === 0">
+                            <div class="text-center py-12">
+                                <i class="fas fa-comments text-gray-300 text-5xl mb-4"></i>
+                                <p class="text-gray-500 text-lg">No hay comentarios aún</p>
+                                <p class="text-gray-400 text-sm mt-2">Sé el primero en dejar tu valoración</p>
                             </div>
                         </template>
                     </div>
@@ -182,7 +225,8 @@
                     <div class="bg-white rounded-lg shadow p-6">
                         <template x-if="!cargando && curso">
                             <div class="flex items-center justify-center mb-4">
-                                <img :src="curso.imagen ? 'public/assets/portadas/' + curso.imagen : 'public/assets/portadas/plantilla.jpg'" :alt="curso.nombre" class="w-full h-50 rounded mb-4 object-cover">
+                                <img :src="curso.imagen ? 'public/assets/portadas/' + curso.imagen : 'public/assets/portadas/plantilla.jpg'"
+                                    :alt="curso.nombre" class="w-full h-50 rounded mb-4 object-cover">
                             </div>
                         </template>
                         <template x-if="cargando">

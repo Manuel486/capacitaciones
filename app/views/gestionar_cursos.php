@@ -1,19 +1,22 @@
 <div x-data="gestionarCursosComponente()">
     <div class="container mx-auto px-4 py-8">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-            <!-- Panel de estadísticas del instructor -->
             <div class="lg:col-span-3">
                 <div class="bg-white rounded-lg shadow p-6 sticky top-4">
                     <div class="flex justify-center mb-4">
-                        <div class="w-32 h-32 rounded-full overflow-hidden border-2 border-blue-900 bg-blue-100 flex items-center justify-center">
+                        <div
+                            class="w-32 h-32 rounded-full overflow-hidden border-2 border-blue-900 bg-blue-100 flex items-center justify-center">
                             <i class="fas fa-chalkboard-teacher text-5xl text-blue-900"></i>
                         </div>
                     </div>
 
                     <div class="text-center mb-6">
-                        <h2 class="text-md font-bold text-gray-900 mb-1" x-text="nombreInstructor"></h2>
-                        <p class="text-sm text-gray-600">Instructor</p>
+                        <template x-if="usuarioLogueado">
+                            <div>
+                                <h2 class="text-md font-bold text-gray-900 mb-1" x-text="usuarioLogueado.nombres"></h2>
+                                <p class="text-sm text-gray-600" x-text="usuarioLogueado.dni"></p>
+                            </div>
+                        </template>
                     </div>
 
                     <div class="space-y-4">
@@ -47,7 +50,6 @@
                 </div>
             </div>
 
-            <!-- Panel de cursos -->
             <div class="lg:col-span-9">
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex justify-between items-center mb-6">
@@ -62,8 +64,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-1 gap-4">
                         <template x-if="cargando">
                             <template x-for="n in 3" :key="n">
-                                <div
-                                    class="bg-white rounded-lg h-full shadow-md flex flex-col overflow-hidden">
+                                <div class="bg-white rounded-lg h-full shadow-md flex flex-col overflow-hidden">
                                     <div class="flex justify-center items-center h-32 w-full bg-gray-200">
                                         <div
                                             class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-900">
@@ -80,16 +81,19 @@
 
                         <template x-if="!cargando">
                             <template x-for="(curso, index) in cursos" :key="curso.id_curso">
-                                <div class="flex flex-col sm:flex-row items-stretch bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 px-4 py-3 mb-2 border border-gray-100">
-                                    <div class="flex-shrink-0 w-full sm:w-40 h-32 sm:h-20 rounded overflow-hidden mb-3 sm:mb-0 sm:mr-4">
+                                <div
+                                    class="flex flex-col sm:flex-row items-stretch bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 px-4 py-3 mb-2 border border-gray-100">
+                                    <div
+                                        class="flex-shrink-0 w-full sm:w-40 h-32 sm:h-20 rounded overflow-hidden mb-3 sm:mb-0 sm:mr-4">
                                         <img :src="curso.imagen ? 'public/assets/portadas/' + curso.imagen : 'public/assets/portadas/plantilla.jpg'"
                                             alt="Imagen del curso" class="w-full h-full object-cover">
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center gap-2 mb-1">
-                                            <h3 class="text-base font-semibold text-gray-900 truncate" x-text="curso.nombre"></h3>
+                                            <h3 class="text-base font-semibold text-gray-900 truncate"
+                                                x-text="curso.nombre"></h3>
                                         </div>
-                                        <p class="text-gray-600 text-xs truncate mb-1"
+                                        <p class="text-gray-600 text-xs truncate mb-4"
                                             x-text="curso.descripcion && curso.descripcion.length > 80 ? curso.descripcion.substring(0, 80) + '...' : curso.descripcion">
                                         </p>
                                         <div class="flex items-center gap-4 text-md text-gray-500">
@@ -98,8 +102,12 @@
                                                 <span x-text="curso.inscritos || 0"></span>
                                             </div>
                                             <div class="flex items-center gap-1">
-                                                <i class="fas fa-star text-yellow-500"></i>
-                                                <span x-text="curso.valoracion ? curso.valoracion.toFixed(1) : 'N/A'"></span>
+                                                <template x-for="star in 5" :key="star">
+                                                    <i class="fas fa-star text-lg"
+                                                        :class="star <= curso.valoracion_promedio ? 'text-yellow-400' : 'text-gray-300'"></i>
+                                                </template>
+                                                <span class="ml-2 text-sm font-medium text-gray-600"
+                                                    x-text="curso.valoracion_promedio + '/5'"></span>
                                             </div>
                                             <div class="flex items-center gap-1">
                                                 <i class="fas fa-clock"></i>
@@ -107,7 +115,8 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="flex flex-row sm:flex-col gap-2 mt-3 sm:mt-0 sm:ml-4 items-end sm:items-end">
+                                    <div
+                                        class="flex flex-row sm:flex-col gap-2 mt-3 sm:mt-0 sm:ml-4 items-end sm:items-end">
                                         <span :class="{
                                                 'px-2 py-0.5 rounded-full text-xs font-semibold mb-2': true,
                                                 'bg-green-500 text-white': curso.activo == 1,

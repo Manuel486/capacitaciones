@@ -17,7 +17,7 @@
 </head>
 
 <body class="<?= $vista === 'tomar_curso' ? 'bg-white' : 'bg-gray-50' ?>">
-    <div x-data="appComponente()" @abrir-modal.window="abrirModalConDatos($event.detail)">
+    <div x-data="appComponente()" @abrir-modal.window="abrirModalConDatos($event.detail)" @obtener-usuario-logueado.window="obtenerUsuarioLogueado($event.detail)">
 
         <div x-show="modalDialogo.activo" x-cloak class="fixed inset-0 flex items-center justify-center z-1000">
             <div class="fixed inset-0 bg-black/75"></div>

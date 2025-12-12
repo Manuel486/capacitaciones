@@ -40,21 +40,21 @@ class CursoUsuarioModel
 
             $totalItems = 0;
             foreach ($items as $item) {
-                if($item['tipo'] === 'clase') {
+                if ($item['tipo'] === 'clase') {
                     $sqlClase = "SELECT activo FROM clase WHERE id_clase = :id_clase AND activo = 1";
                     $stmtClase = $pdo->prepare($sqlClase);
                     $stmtClase->execute(['id_clase' => $item['id_referencia']]);
                     if ($stmtClase->fetch()) {
                         $totalItems++;
                     }
-                } else if($item['tipo'] === 'anuncio') {
+                } else if ($item['tipo'] === 'anuncio') {
                     $sqlAnuncio = "SELECT activo FROM anuncio WHERE id_anuncio = :id_anuncio AND activo = 1";
                     $stmtAnuncio = $pdo->prepare($sqlAnuncio);
                     $stmtAnuncio->execute(['id_anuncio' => $item['id_referencia']]);
                     if ($stmtAnuncio->fetch()) {
                         $totalItems++;
                     }
-                } else if($item['tipo'] === 'evaluacion') {
+                } else if ($item['tipo'] === 'evaluacion') {
                     $sqlEvaluacion = "SELECT activo FROM evaluacion WHERE id_evaluacion = :id_evaluacion AND activo = 1";
                     $stmtEvaluacion = $pdo->prepare($sqlEvaluacion);
                     $stmtEvaluacion->execute(['id_evaluacion' => $item['id_referencia']]);
@@ -107,24 +107,28 @@ class CursoUsuarioModel
             $stmt->execute(['id_autor' => $dniUsuario]);
             $cursos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            if(count($cursos) > 0){
+            if (count($cursos) > 0) {
                 foreach ($cursos as $index => $curso) {
                     $queryInscritos = "SELECT COUNT(*) FROM curso_usuario WHERE id_curso = :id_curso";
                     $stmtInscritos = $pdo->prepare($queryInscritos);
                     $stmtInscritos->execute(['id_curso' => $curso['id_curso']]);
                     $cursos[$index]['inscritos'] = $stmtInscritos->fetchColumn();
 
-                    // $queryValoracion = "SELECT AVG(valoracion) FROM curso_valoracion WHERE id_curso = :id_curso";
-                    // $stmtValoracion = $pdo->prepare($queryValoracion);
-                    // $stmtValoracion->execute(['id_curso' => $curso['id_curso']]);
-                    // $cursos[$index]['valoracion'] = round($stmtValoracion->fetchColumn(), 1);
+                    // Obtener valoracion promedio
+                    $queryValoraciones = "SELECT * FROM curso_valoracion WHERE id_curso = :id_curso";
+                    $stmtValoraciones = $pdo->prepare($queryValoraciones);
+                    $stmtValoraciones->execute(['id_curso' => $cursos[$index]['id_curso']]);
+                    $valoraciones = $stmtValoraciones->fetchAll(PDO::FETCH_ASSOC);
 
-                    // $queryDuracion = "SELECT SUM(duracion) FROM tema_item ti
-                    //                   JOIN tema t ON ti.id_tema = t.id_tema
-                    //                   WHERE t.id_curso = :id_curso AND ti.tipo = 'clase'";
-                    // $stmtDuracion = $pdo->prepare($queryDuracion);
-                    // $stmtDuracion->execute(['id_curso' => $curso['id_curso']]);
-                    // $cursos[$index]['duracion'] = $stmtDuracion->fetchColumn();
+                    if (count($valoraciones) > 0) {
+                        $sumaValoraciones = array_reduce($valoraciones, function ($sum, $valoracion) {
+                            return $sum + $valoracion['valoracion'];
+                        }, 0);
+                        $cursos[$index]['valoracion_promedio'] = round($sumaValoraciones / count($valoraciones));
+                        // Redondear a un decimal
+                    } else {
+                        $cursos[$index]['valoracion_promedio'] = 0;
+                    }
                 }
             }
 

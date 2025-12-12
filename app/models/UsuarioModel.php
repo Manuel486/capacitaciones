@@ -2,6 +2,7 @@
 
 require_once __DIR__ . "/database/ConexionCapacitaciones.php";
 require_once __DIR__ . "/database/ConexionRRHH.php";
+require_once __DIR__ . "/database/ConexionDocumentos.php";
 
 class UsuarioModel
 {
@@ -31,7 +32,6 @@ class UsuarioModel
                     return ["exitoso" => false, "error" => "Usuario inactivo. Por favor, contacte al administrador."];
                 }
 
-                // Buscar el rol que tiene
                 $sqlRol = "SELECT r.nombre
                            FROM usuario_rol ur
                            INNER JOIN rol r ON r.id_rol = ur.id_rol
@@ -44,7 +44,6 @@ class UsuarioModel
 
                 $roles = $statementRol->fetchAll(PDO::FETCH_COLUMN);
 
-                // Verificar si tiene roles asignados
                 if (empty($roles)) {
                     // ROL_ESTUDIANTE => 3
                     $sqlAsignarRol = "INSERT INTO usuario_rol (id_usuario, id_rol) VALUES (:id_usuario, 3)";
@@ -65,7 +64,6 @@ class UsuarioModel
                     $roles = $statementRolNuevo->fetchAll(PDO::FETCH_COLUMN);
                 }
 
-                // Obtener arreglo de accesos
                 $accesos = [];
                 if (!empty($roles)) {
                     $placeholders = implode(',', array_fill(0, count($roles), '?'));
@@ -82,6 +80,7 @@ class UsuarioModel
                 $usuarioData['roles'] = $roles;
                 $usuarioData["exitoso"] = true;
                 $usuarioData["accesos"] = $accesos;
+
                 return $usuarioData;
             }
 
@@ -95,8 +94,9 @@ class UsuarioModel
     {
         $pdoRRHH = ConexionRRHH::getInstancia()->getConexion();
         $pdoCapacitaciones = ConexionCapacitaciones::getInstancia()->getConexion();
+        $pdoDocumentos = ConexionDocumentos::getInstancia()->getConexion();
         try {
-            $sqlUsuario = "SELECT * FROM tabla_aquarius WHERE dni = :dni";
+            $sqlUsuario = "SELECT * FROM tabla_aquarius tb WHERE dni = :dni";
             $statementUsuario = $pdoRRHH->prepare($sqlUsuario);
             $statementUsuario->execute([
                 'dni' => $dni
@@ -134,6 +134,22 @@ class UsuarioModel
 
             $usuarioData['roles'] = $roles;
             $usuarioData['accesos'] = $accesos;
+
+            // Obtener foto desde postulantes
+            $sqlPostulaciones = "SELECT idreg FROM postulante WHERE documento = :dni ORDER BY registro DESC LIMIT 1";
+            $statementPostulaciones = $pdoDocumentos->prepare($sqlPostulaciones);
+            $statementPostulaciones->execute([
+                'dni' => $usuarioData['dni']
+            ]);
+            $postulacion = $statementPostulaciones->fetch(PDO::FETCH_ASSOC);
+            if ($postulacion) {
+                // $usuarioData['foto'] = $postulacion['idreg'];
+                $usuarioData['foto'] = null;
+            } else {
+                $usuarioData['foto'] = null;
+            }
+            
+
             $usuarioData['exitoso'] = true;
             return $usuarioData;
         } catch (PDOException $e) {

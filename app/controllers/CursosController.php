@@ -209,7 +209,7 @@ class CursosController
             }
         }
 
-        if($datosClase['id_clase']) {
+        if ($datosClase['id_clase']) {
             $clase = $this->cursoModel->editarClase($datosClase);
         } else {
             $clase = $this->cursoModel->guardarClase($datosClase);
@@ -248,7 +248,7 @@ class CursosController
             return;
         }
 
-        if($datosTema['id_tema']) {
+        if ($datosTema['id_tema']) {
             $tema = $this->cursoModel->editarTema($datosTema);
         } else {
             $tema = $this->cursoModel->guardarTema($datosTema);
@@ -287,7 +287,7 @@ class CursosController
             return;
         }
 
-        if($datosAnuncio['id_anuncio']) {
+        if ($datosAnuncio['id_anuncio']) {
             $anuncio = $this->cursoModel->editarAnuncio($datosAnuncio);
         } else {
             $anuncio = $this->cursoModel->guardarAnuncio($datosAnuncio);
@@ -326,7 +326,7 @@ class CursosController
             return;
         }
 
-        if($datosEvaluacion['id_evaluacion']) {
+        if ($datosEvaluacion['id_evaluacion']) {
             $evaluacion = $this->cursoModel->editarEvaluacion($datosEvaluacion);
         } else {
             $evaluacion = $this->cursoModel->guardarEvaluacion($datosEvaluacion);
@@ -450,6 +450,38 @@ class CursosController
             echo ApiRespuesta::exitoso($comentario, "Comentario guardado exitosamente");
         } else {
             echo ApiRespuesta::error("Error al guardar el comentario");
+        }
+    }
+
+    public function apiGuardarValoracionCurso()
+    {
+        if (
+            !AuthHelper::verificarAccesoResponsable(
+                ['gestionar_cursos'],
+                'gestionar_cursos',
+                'Cambiar estado del ítem'
+            )
+        ) {
+            return;
+        }
+        $secretKey = CLAVE_TOKEN;
+        $sesion = JWT::decode($_COOKIE['sepcon_session_token'], new Key($secretKey, 'HS256'));
+        $idCurso = $_POST['id_curso'] ?? null;
+        $valoracion = $_POST['valoracion'] ?? null;
+        $comentario = $_POST['comentario'] ?? '';
+
+        if ($idCurso === null || $valoracion === null) {
+            echo ApiRespuesta::error("Parámetros 'id_curso' y 'valoracion' son obligatorios");
+            return;
+        }
+
+        $resultado = $this->cursoModel->guardarValoracionCurso($idCurso, $sesion->data->dni, $valoracion, $comentario, $sesion->data->nombres . ' ' . $sesion->data->apellidos);
+
+        if ($resultado) {
+            $valoraciones = $this->cursoModel->obtenerValoracionesPorCursoId($idCurso);
+            echo ApiRespuesta::exitoso($valoraciones, "Valoración del curso guardada exitosamente");
+        } else {
+            echo ApiRespuesta::error("Error al guardar la valoración del curso");
         }
     }
 

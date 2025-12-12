@@ -61,6 +61,12 @@ function misCursosComponente() {
         },
         init() {
             this.obtenerCursos();
+            // Obtener usuario logueado desde el componente principal
+            this.$dispatch('obtener-usuario-logueado', {
+                callback: (usuario) => {
+                    this.usuario = usuario;
+                }
+            });
         }
     };
 }

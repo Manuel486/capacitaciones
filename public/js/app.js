@@ -62,6 +62,11 @@ function appComponente() {
         console.error("Error al cerrar sesión:", error);
       }
     },
+    obtenerUsuarioLogueado(detail) {
+      if (detail && detail.callback) {
+        detail.callback(this.usuarioLogueado);
+      }
+    },
     cerrarModalIniciarSesion() {
       this.modalIniciarSesion.activo = false;
       this.sesion.usuario = "";

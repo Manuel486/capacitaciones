@@ -68,6 +68,11 @@ function nuevoCursoComponente() {
     modalClase: false,
     modalAnuncio: false,
     modalEvaluacion: false,
+    guardandoTema: false,
+    guardandoClase: false,
+    guardandoAnuncio: false,
+    guardandoEvaluacion: false,
+    guardandoCursoGeneral: false,
     async obtenerTodosLosUsuarios() {
       try {
         const respuesta = await fetch("api/obtener_todos_usuarios", {
@@ -236,6 +241,8 @@ function nuevoCursoComponente() {
     },
 
     async guardarCurso() {
+      if( this.guardandoCursoGeneral ) return;
+
       if (!this.curso.nombre || !this.curso.descripcion) {
         this.$dispatch("abrir-modal", {
           titulo: "Advertencia",
@@ -244,6 +251,8 @@ function nuevoCursoComponente() {
         });
         return;
       }
+
+      this.guardandoCursoGeneral = true;
 
       try {
         const formData = new FormData();
@@ -273,6 +282,8 @@ function nuevoCursoComponente() {
         }
       } catch (error) {
         console.error("Error en la petición:", error);
+      } finally {
+        this.guardandoCursoGeneral = false;
       }
     },
 
@@ -493,6 +504,8 @@ function nuevoCursoComponente() {
       this.modalTema = true;
     },
     async guardarTema() {
+      if( this.guardandoTema ) return;
+
       if (!this.temaSeleccionado.nombre) {
         this.$dispatch("abrir-modal", {
           titulo: "Campos obligatorios",
@@ -501,6 +514,8 @@ function nuevoCursoComponente() {
         });
         return;
       }
+
+      this.guardandoTema = true;
 
       try {
         const formData = new FormData();
@@ -532,6 +547,8 @@ function nuevoCursoComponente() {
         }
       } catch (error) {
         console.error("Error al guardar el tema:", error);
+      } finally {
+        this.guardandoTema = false;
       }
     },
     cerrarModalTema() {
@@ -613,6 +630,8 @@ function nuevoCursoComponente() {
       };
     },
     async guardarAnuncio() {
+      if( this.guardandoAnuncio ) return;
+
       if (
         !this.anuncioSeleccionado.titulo ||
         !this.anuncioSeleccionado.descripcion ||
@@ -626,6 +645,8 @@ function nuevoCursoComponente() {
         });
         return;
       }
+
+      this.guardandoAnuncio = true;
 
       try {
         const formData = new FormData();
@@ -655,6 +676,8 @@ function nuevoCursoComponente() {
         }
       } catch (error) {
         console.error("Error al guardar el anuncio:", error);
+      } finally {
+        this.guardandoAnuncio = false;
       }
     },
     agregarEvaluacionATema(tema) {
@@ -678,6 +701,8 @@ function nuevoCursoComponente() {
       };
     },
     async guardarEvaluacion() {
+      if( this.guardandoEvaluacion ) return;
+
       if (
         !this.evaluacionSeleccionada.titulo ||
         !this.evaluacionSeleccionada.descripcion
@@ -742,6 +767,8 @@ function nuevoCursoComponente() {
         }
       }
 
+      this.guardandoEvaluacion = true;
+
       try {
         const formData = new FormData();
         formData.append(
@@ -772,6 +799,8 @@ function nuevoCursoComponente() {
         }
       } catch (error) {
         console.error("Error al guardar la evaluación:", error);
+      } finally {
+        this.guardandoEvaluacion = false;
       }
     },
     agregarPregunta() {
@@ -820,6 +849,7 @@ function nuevoCursoComponente() {
       };
     },
     async guardarClase() {
+      if( this.guardandoClase ) return;
       if (
         !this.claseSeleccionada.titulo ||
         !this.claseSeleccionada.descripcion ||
@@ -833,6 +863,8 @@ function nuevoCursoComponente() {
         });
         return;
       }
+
+      this.guardandoClase = true;
 
       try {
         const formData = new FormData();
@@ -871,6 +903,8 @@ function nuevoCursoComponente() {
         }
       } catch (error) {
         console.error("Error al guardar la clase:", error);
+      } finally {
+        this.guardandoClase = false;
       }
     },
     init() {

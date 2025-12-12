@@ -109,8 +109,8 @@
                                             <span class="block text-gray-700 text-lg font-semibold"
                                                 x-text="item_actual.detalle.titulo ?? 'Evaluación.'"></span>
                                         </div>
-                                        <span class="block text-gray-700 text-md"
-                                            x-text="item_actual.detalle.descripcion"></span>
+                                        <!-- <span class="block text-gray-700 text-md"
+                                            x-text="item_actual.detalle.descripcion"></span> -->
                                         <span class="font-medium">Nota: Para aprobar necesita responder al menos el
                                             70% del examen</span>
                                         <button x-show="item_actual.completado == 0" @click="activarModoEvaluacion()"

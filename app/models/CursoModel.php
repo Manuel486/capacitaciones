@@ -95,6 +95,22 @@ class CursoModel
                 $curso['temas'] = [];
             }
 
+            // Obtener valoraciones
+            $queryValoraciones = "SELECT * FROM curso_valoracion WHERE id_curso = :id_curso";
+            $stmtValoraciones = $pdo->prepare($queryValoraciones);
+            $stmtValoraciones->execute(['id_curso' => $idCurso]);
+            $curso['valoraciones'] = $stmtValoraciones->fetchAll(PDO::FETCH_ASSOC);
+
+            if (count($curso['valoraciones']) > 0) {
+                $sumaValoraciones = array_reduce($curso['valoraciones'], function ($sum, $valoracion) {
+                    return $sum + $valoracion['valoracion'];
+                }, 0);
+                $curso['valoracion_promedio'] = round($sumaValoraciones / count($curso['valoraciones']));
+                // Redondear a un decimal
+            } else {
+                $curso['valoracion_promedio'] = 0;
+            }
+
             // Obtener cantidad de estudiantes inscritos
             $queryEstudiantes = "SELECT COUNT(*) AS total_estudiantes FROM curso_usuario WHERE id_curso = :id_curso";
             $stmtEstudiantes = $pdo->prepare($queryEstudiantes);
@@ -944,4 +960,40 @@ class CursoModel
         }
     }
 
+    public function guardarValoracionCurso($idCurso, $dniUsuario, $valoracion, $comentario, $nombreUsuario)
+    {
+        $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
+        try {
+            $queryInsertar = "INSERT INTO curso_valoracion (id_valoracion, id_curso, id_usuario, valoracion, comentario, nombre_usuario) 
+                              VALUES (:id_valoracion,:id_curso, :id_usuario, :valoracion, :comentario, :nombre_usuario)";
+            $stmtInsertar = $pdo->prepare($queryInsertar);
+            $stmtInsertar->execute([
+                'id_valoracion' => generarIdUnico("CVA"),
+                'id_curso' => $idCurso,
+                'id_usuario' => $dniUsuario,
+                'valoracion' => $valoracion,
+                'comentario' => $comentario,
+                'nombre_usuario' => $nombreUsuario
+            ]);
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    public function obtenerValoracionesPorCursoId($idCurso)
+    {
+        $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
+        try {
+            $query = "SELECT cv.id_valoracion, cv.id_curso, cv.id_usuario, cv.valoracion, cv.comentario, cv.nombre_usuario
+                      FROM curso_valoracion cv
+                      WHERE cv.id_curso = :id_curso
+                      ORDER BY cv.id_valoracion DESC";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute(['id_curso' => $idCurso]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            return [];
+        }
+    }
 }

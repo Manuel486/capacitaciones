@@ -10,8 +10,11 @@ define("DATABASE_CAPACITACIONES_PASSWORD","");
 define("DATABASE_RRHH_URL","mysql:dbname=rrhh;host=localhost");
 define("DATABASE_RRHH_USER","root");
 define("DATABASE_RRHH_PASSWORD","");
+define("DATABASE_DOCUMENTOS_URL","mysql:dbname=documentos;host=localhost");
+define("DATABASE_DOCUMENTOS_USER","root");
+define("DATABASE_DOCUMENTOS_PASSWORD","");
 define("BASE_URL", "/capacitaciones/");
 
-define('APP_VERSION', '1.0.0');
+define('APP_VERSION', '1.0.1');
 
 define('CLAVE_TOKEN', 'sepconRRHH2025');

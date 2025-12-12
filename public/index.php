@@ -8,7 +8,6 @@ require __DIR__ . '/../vendor/autoload.php';
 $router = new AltoRouter();
 $router->setBasePath('/capacitaciones');
 
-// Función auxiliar para registrar rutas
 function route($router, $metodo, $path, $controlador, $accion) {
     $router->map($metodo, $path, function () use ($controlador, $accion) {
         require_once CONTROLLERS_PATH . "/{$controlador}.php";
@@ -55,6 +54,7 @@ route($router, 'POST', '/api/guardar_evaluacion', 'CursosController', 'apiGuarda
 route($router, 'POST', '/api/cambiar_estado_curso', 'CursosController', 'apiCambiarEstadoCurso');
 route($router, 'POST', '/api/cambiar_estado_item', 'CursosController', 'apiCambiarEstadoItem');
 route($router, 'POST', '/api/guardar_comentario', 'CursosController', 'apiGuardarComentario');
+route($router, 'POST', '/api/guardar_valoracion_curso', 'CursosController', 'apiGuardarValoracionCurso');
 
 
 // =============== CURSO USUARIO CONTROLLER ===============
