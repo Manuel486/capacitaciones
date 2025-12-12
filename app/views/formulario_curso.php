@@ -124,24 +124,20 @@
                         class="block w-full cursor-pointer border-2 border-dashed border-blue-400 rounded-lg p-6 text-center text-blue-600 font-semibold text-lg hover:bg-blue-50 transition">
                         <i class="fas fa-cloud-upload-alt text-3xl mb-2"></i><br />
                         Arrastra o suelta el video aquí o haz clic para seleccionar
-
                     </label>
                     <input type="file" id="videoClase" class="hidden" accept="video/*"
-                        @change="claseSeleccionada.video = $event.target.files[0]; $event.target.value = null;" />
-
+                        @change="
+                            claseSeleccionada.video = $event.target.files[0];
+                            $nextTick(() => document.getElementById('previewVideoClase')?.load());
+                            $event.target.value = null;
+                        " />
                     <div class="mt-4" x-show="claseSeleccionada.video" x-cloak>
-                        <template x-if="claseSeleccionada.video && typeof claseSeleccionada.video === 'string'">
-                            <video class="w-full rounded-lg shadow" controls>
-                                <source :src="'api/obtener_video?nombre=' + claseSeleccionada.video" type="video/mp4" />
-                                Tu navegador no soporta la reproducción de video.
-                            </video>
-                        </template>
-                        <template x-if="claseSeleccionada.video && typeof claseSeleccionada.video === 'object'">
-                            <video class="w-full rounded-lg shadow" controls>
-                                <source :src="URL.createObjectURL(claseSeleccionada.video)" type="video/mp4" />
-                                Tu navegador no soporta la reproducción de video.
-                            </video>
-                        </template>
+                        <video id="previewVideoClase" class="w-full rounded-lg shadow" controls
+                            :src="typeof claseSeleccionada.video === 'string'
+                                ? 'api/obtener_video?nombre=' + claseSeleccionada.video
+                                : (claseSeleccionada.video ? URL.createObjectURL(claseSeleccionada.video) : '')">
+                            Tu navegador no soporta la reproducción de video.
+                        </video>
                     </div>
                 </div>
                 <div class="flex justify-end space-x-2 pt-2">
@@ -341,7 +337,7 @@
                             <div class="flex justify-between items-center p-4 bg-gray-50 border-b border-gray-200">
                                 <div class="flex items-center space-x-3">
                                     <i class="fas fa-grip-vertical text-gray-400 cursor-pointer"></i>
-                                    <span class="font-semibold text-gray-800" x-text="'Tema :' + tema.nombre"></span>
+                                    <span class="font-semibold text-gray-800" x-text="'Tema : ' + tema.nombre"></span>
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <button @click="editarTema(tema)"
