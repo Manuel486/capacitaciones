@@ -11,8 +11,14 @@ function appComponente() {
       activo: false,
       mensaje: "",
     },
+    modalIniciarSesion: {
+      activo: false,
+    },
     modalDialogo: {
       activo: false,
+      titulo: "",
+      mensaje: "",
+      tipo: "",
     },
     async iniciarSesion() {
       try {
@@ -30,7 +36,7 @@ function appComponente() {
           this.usuarioLogueado = data.respuesta;
           this.sesion.usuario = "";
           this.sesion.password = "";
-          this.cerrarModalDialogo();
+          this.cerrarModalIniciarSesion();
           this.credencialesInvalidas.activo = false;
         } else {
           this.credencialesInvalidas.activo = true;
@@ -56,14 +62,26 @@ function appComponente() {
         console.error("Error al cerrar sesión:", error);
       }
     },
-    cerrarModalDialogo() {
-      this.modalDialogo.activo = false;
+    cerrarModalIniciarSesion() {
+      this.modalIniciarSesion.activo = false;
       this.sesion.usuario = "";
       this.sesion.password = "";
       this.credencialesInvalidas.activo = false;
     },
-    activarModalDialogo() {
+    activarModalIniciarSesion() {
+      this.modalIniciarSesion.activo = true;
+    },
+    abrirModalConDatos(datos) {
       this.modalDialogo.activo = true;
+      this.modalDialogo.titulo = datos.titulo || "";
+      this.modalDialogo.mensaje = datos.mensaje || "";
+      this.modalDialogo.tipo = datos.tipo || "";
+    },
+    cerrarModalDialogo() {
+      this.modalDialogo.activo = false;
+      this.modalDialogo.titulo = "";
+      this.modalDialogo.mensaje = "";
+      this.modalDialogo.tipo = "";
     },
     async verificarSesion() {
       try {

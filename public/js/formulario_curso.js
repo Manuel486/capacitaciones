@@ -10,6 +10,7 @@ function nuevoCursoComponente() {
       duracion: 0,
       acceso_libre: 1,
       temas: [],
+      activo: 1,
     },
     temaSeleccionado: {
       id_tema: null,
@@ -236,7 +237,11 @@ function nuevoCursoComponente() {
 
     async guardarCurso() {
       if (!this.curso.nombre || !this.curso.descripcion) {
-        alert("Por favor, completa todos los campos obligatorios.");
+        this.$dispatch("abrir-modal", {
+          titulo: "Advertencia",
+          mensaje: "Por favor, complete los campos de nombre y descripción del curso.",
+          tipo: "advertencia",
+        });
         return;
       }
 
@@ -394,6 +399,7 @@ function nuevoCursoComponente() {
             duracion: data.respuesta.duracion || 0,
             acceso_libre: data.respuesta.acceso_libre,
             temas: data.respuesta.temas || [],
+            activo: data.respuesta.activo || 1,
           };
 
           if (Array.isArray(this.curso.temas) && this.curso.temas.length > 0) {
@@ -426,10 +432,46 @@ function nuevoCursoComponente() {
         this.cargando = false;
       }
     },
+    async cambiarEstadoCurso() {
+      this.curso.activo = this.curso.activo == 1 ? 0 : 1;
+
+      try {
+        const formData = new FormData();
+        formData.append("id_curso", this.curso.id_curso);
+        formData.append("activo", this.curso.activo);
+        const respuesta = await fetch("api/cambiar_estado_curso", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await respuesta.json();
+        if (!data.exitoso) {
+          console.error("Error al cambiar el estado del curso:", data.mensaje);
+        }
+      } catch (error) {
+        console.error("Error en la petición:", error);
+      }
+    },
+    async cambiarEstadoItem(item) {
+      item.detalle.activo = item.detalle.activo == 1 ? 0 : 1;
+      try {
+        const formData = new FormData();
+        formData.append("id_item", item.id_item);
+        formData.append("activo", item.detalle.activo);
+        const respuesta = await fetch("api/cambiar_estado_item", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await respuesta.json();
+        if (!data.exitoso) {
+          console.error("Error al cambiar el estado del ítem:", data.mensaje);
+        }
+      } catch (error) {
+        console.error("Error en la petición:", error);
+      }
+    },
     agregarTema() {
       const nuevoOrden = this.curso.temas.length + 1;
       this.temaSeleccionado = {
-        // ← Objeto NUEVO
         id_tema: null,
         id_curso: this.curso.id_curso,
         nombre: "",
@@ -452,7 +494,11 @@ function nuevoCursoComponente() {
     },
     async guardarTema() {
       if (!this.temaSeleccionado.nombre) {
-        alert("Por favor, completa el nombre del tema.");
+        this.$dispatch("abrir-modal", {
+          titulo: "Campos obligatorios",
+          mensaje: "Por favor, complete el nombre del tema.",
+          tipo: "info",
+        });
         return;
       }
 
@@ -532,6 +578,19 @@ function nuevoCursoComponente() {
         };
         this.modalAnuncio = true;
         tema.dropDownActivo = false;
+      } else if (item.tipo === "evaluacion") {
+        this.evaluacionSeleccionada = {
+          id_evaluacion: item.id_referencia,
+          id_tema: tema.id_tema,
+          id_item: item.id_item,
+          titulo: item.detalle.titulo,
+          descripcion: item.detalle.descripcion,
+          preguntas: item.detalle.preguntas || [],
+          activo: item.detalle.activo,
+          orden: item.orden,
+        };
+        this.modalEvaluacion = true;
+        tema.dropDownActivo = false;
       }
     },
     agregarAnuncioATema(tema) {
@@ -559,7 +618,12 @@ function nuevoCursoComponente() {
         !this.anuncioSeleccionado.descripcion ||
         !this.anuncioSeleccionado.anuncio
       ) {
-        alert("Por favor, completa todos los campos obligatorios del anuncio.");
+        this.$dispatch("abrir-modal", {
+          titulo: "Campos obligatorios",
+          mensaje:
+            "Por favor, complete los campos de título, descripción y contenido del anuncio.",
+          tipo: "info",
+        });
         return;
       }
 
@@ -618,12 +682,72 @@ function nuevoCursoComponente() {
         !this.evaluacionSeleccionada.titulo ||
         !this.evaluacionSeleccionada.descripcion
       ) {
-        alert("Por favor, completa todos los campos obligatorios de la evaluación.");
+        this.$dispatch("abrir-modal", {
+          titulo: "Campos obligatorios",
+          mensaje:
+            "Por favor, complete los campos de título y descripción de la evaluación, y como mínimo una pregunta.",
+          tipo: "info",
+        });
         return;
       }
+
+      if (
+        !Array.isArray(this.evaluacionSeleccionada.preguntas) ||
+        this.evaluacionSeleccionada.preguntas.length === 0
+      ) {
+        this.$dispatch("abrir-modal", {
+          titulo: "Campos obligatorios",
+          mensaje: "La evaluación debe tener al menos una pregunta.",
+          tipo: "info",
+        });
+        return;
+      }
+
+      for (const [
+        i,
+        pregunta,
+      ] of this.evaluacionSeleccionada.preguntas.entries()) {
+        if (
+          !pregunta.contenido ||
+          !Array.isArray(pregunta.alternativas) ||
+          pregunta.alternativas.length === 0
+        ) {
+          this.$dispatch("abrir-modal", {
+        titulo: "Campos obligatorios",
+        mensaje: `La pregunta ${i + 1} no puede estar vacía y al menos debe tener una alternativa.`,
+        tipo: "info",
+          });
+          return;
+        }
+        for (const [j, alternativa] of pregunta.alternativas.entries()) {
+          if (!alternativa.contenido) {
+        this.$dispatch("abrir-modal", {
+          titulo: "Campos obligatorios",
+          mensaje: `La alternativa ${j + 1} de la pregunta ${i + 1} no puede estar vacía.`,
+          tipo: "info",
+        });
+        return;
+          }
+        }
+        const tieneRespuesta = pregunta.alternativas.some(
+          (a) => a.es_respuesta == 1
+        );
+        if (!tieneRespuesta) {
+          this.$dispatch("abrir-modal", {
+        titulo: "Campos obligatorios",
+        mensaje: `La pregunta ${i + 1} debe tener una alternativa marcada como respuesta.`,
+        tipo: "info",
+          });
+          return;
+        }
+      }
+
       try {
         const formData = new FormData();
-        formData.append("evaluacion", JSON.stringify(this.evaluacionSeleccionada));
+        formData.append(
+          "evaluacion",
+          JSON.stringify(this.evaluacionSeleccionada)
+        );
         const respuesta = await fetch("api/guardar_evaluacion", {
           method: "POST",
           body: formData,
@@ -678,7 +802,8 @@ function nuevoCursoComponente() {
     },
     eliminarAlternativa(indexPregunta, indexAlternativa) {
       this.evaluacionSeleccionada.preguntas[indexPregunta].alternativas.splice(
-        indexAlternativa, 1
+        indexAlternativa,
+        1
       );
     },
     cerrarModalClase() {
@@ -697,9 +822,15 @@ function nuevoCursoComponente() {
     async guardarClase() {
       if (
         !this.claseSeleccionada.titulo ||
-        !this.claseSeleccionada.descripcion
+        !this.claseSeleccionada.descripcion ||
+        !this.claseSeleccionada.video
       ) {
-        alert("Por favor, completa todos los campos obligatorios de la clase.");
+        this.$dispatch("abrir-modal", {
+          titulo: "Campos obligatorios",
+          mensaje:
+            "Por favor, complete los campos de título, descripción y video de la clase.",
+          tipo: "info",
+        });
         return;
       }
 

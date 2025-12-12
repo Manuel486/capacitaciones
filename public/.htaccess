@@ -1,9 +1,5 @@
 RewriteEngine On
 
-# Evitar redirección para rutas específicas que pueden contener archivos (documentos, fichas, downloads)
-RewriteCond %{REQUEST_URI} ^/postulantesv2/(documentos|fichas|downloads) [NC]
-RewriteRule ^ - [L]
-
 # Redirigir todo lo demás a index.php solo si no es un archivo o directorio existente
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

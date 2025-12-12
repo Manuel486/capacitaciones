@@ -1,47 +1,33 @@
 <div x-data="tomarCurso()">
-    <div x-show="modalDialogo.activo" x-cloak class="fixed inset-0 flex items-center justify-center z-50">
-        <div class="fixed inset-0 bg-black/75"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-sm mx-auto z-10">
-            <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div class="flex flex-col gap-2 items-center">
-                    <div class="mx-auto flex items-center justify-center w-12 h-12 rounded-full" :class="{
-                               'bg-red-100': modalDialogo.tipo === 'error',
-                               'bg-yellow-100': modalDialogo.tipo === 'advertencia',
-                               'bg-blue-100': modalDialogo.tipo === 'info',
-                               'bg-green-100': modalDialogo.tipo === 'exito'
-                            }">
-                        <template x-if="modalDialogo.tipo === 'error'">
-                            <i class="fas fa-times-circle text-red-600 text-2xl"></i>
-                        </template>
-                        <template x-if="modalDialogo.tipo === 'advertencia'">
-                            <i class="fas fa-exclamation-triangle text-yellow-600 text-2xl"></i>
-                        </template>
-                        <template x-if="modalDialogo.tipo === 'info'">
-                            <i class="fas fa-info-circle text-blue-600 text-2xl"></i>
-                        </template>
-                        <template x-if="modalDialogo.tipo === 'exito'">
-                            <i class="fas fa-check-circle text-green-600 text-2xl"></i>
-                        </template>
-                    </div>
-                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                        <h3 class="text-center font-semibold text-gray-900" x-text="modalDialogo.titulo"></h3>
-                        <div class="mt-2">
-                            <p class="text-sm text-gray-700 text-center" x-text="modalDialogo.mensaje"></p>
-                        </div>
-                    </div>
-                    <div class="w-full mt-4 items-center justify-center flex">
-                        <button type="button"
-                            class="cursor-pointer rounded-md hover:bg-blue-900 px-3 py-2 text-sm font-semibold hover:text-white shadow-xs border bg-white border-blue-900 text-blue-900"
-                            @click="cerrarModalDialogo()">Cerrar</button>
-                    </div>
+
+    <div x-show="modalComentario" x-cloak class="fixed inset-0 flex items-center justify-center z-100 p-4"
+        style="background: rgba(0,0,0,0.5);">
+        <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-4 sm:p-6 relative max-h-[90vh] overflow-y-auto">
+            <button @click="cerrarModalComentario()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h2 class="text-xl font-bold mb-4 text-gray-800">Comentario</h2>
+            <form class="space-y-4">
+                <div>
+                    <textarea x-model="comentario"
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
+                        rows="3" placeholder="Comentario"></textarea>
                 </div>
-
-            </div>
-
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button @click="cerrarModalComentario()" type="button"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
+                        Cancelar
+                    </button>
+                    <button type="button" @click="guardarComentario()"
+                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                        Guardar
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <header class="bg-gray-900 text-white shadow">
+    <div class="bg-gray-900 text-white shadow">
         <div class="max-w-screen-2xl mx-auto px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between">
             <div class="flex gap-4 items-center">
                 <div>
@@ -79,9 +65,9 @@
                     </template>
                 </div> -->
         </div>
-    </header>
+    </div>
 
-    <main class="max-w-screen-2xl mx-auto">
+    <div class="max-w-screen-2xl mx-auto">
         <div class="grid grid-cols-1 lg:grid-cols-7">
 
             <section class="order-1 col-span-5 lg:order-3">
@@ -179,19 +165,73 @@
                                 x-text="item_actual.detalle.titulo">Título de la clase actual</h2>
                             <div class="border-t pt-4">
                                 <div class="flex space-x-4 md:space-x-6 text-xs md:text-sm overflow-x-auto">
-                                    <button
-                                        class="text-gray-900 font-semibold border-b-2 border-gray-900 pb-2 whitespace-nowrap">Descripción</button>
-                                    <button
-                                        class="text-gray-600 hover:text-gray-900 pb-2 whitespace-nowrap">Recursos</button>
-                                    <button
-                                        class="text-gray-600 hover:text-gray-900 pb-2 whitespace-nowrap">Anuncios</button>
-                                    <button
-                                        class="text-gray-600 hover:text-gray-900 pb-2 whitespace-nowrap">Comentarios</button>
+                                    <button @click="detalleItemVista = 'descripcion'" :class="{
+                                            'text-gray-900 font-semibold whitespace-nowrap': true,
+                                            'border-b-2 border-gray-900': detalleItemVista === 'descripcion'
+                                        }">Descripción</button>
+                                    <button x-show="item_actual.tipo === 'clase'"
+                                        @click="detalleItemVista = 'comentarios'; obtenerComentarios()" :class="{
+                                                    'text-gray-900 font-semibold whitespace-nowrap': true,
+                                                    'border-b-2 border-gray-900': detalleItemVista === 'comentarios'
+                                    }">Comentarios</button>
                                 </div>
-                                <div class="mt-4 text-gray-700 text-sm leading-relaxed"
-                                    x-text="item_actual.detalle.descripcion">
-                                    Contenido de la clase va aquí.
+                                <div class="mt-4 text-gray-700 text-sm leading-relaxed">
+                                    <template x-if="detalleItemVista === 'descripcion'">
+                                        <div>
+                                            <p x-text="item_actual.detalle.descripcion"></p>
+                                        </div>
+                                    </template>
 
+                                    <template x-if="detalleItemVista === 'comentarios'">
+                                        <div>
+                                            <template x-if="comentarios_cargando">
+                                                <div class="space-y-3">
+                                                    <div class="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+                                                    <div class="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+                                                    <div class="h-4 bg-gray-200 rounded w-5/6 animate-pulse"></div>
+                                                </div>
+                                            </template>
+                                            <template x-if="!comentarios_cargando">
+                                                <div class="space-y-6">
+                                                    <div class="flex justify-between items-center mb-4">
+                                                        <h3 class="text-lg font-semibold text-gray-900">Comentarios</h3>
+                                                        <button
+                                                            @click="activarModalComentario()"
+                                                            class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition text-sm font-medium"
+                                                        >
+                                                            <i class="fas fa-comment-medical"></i>
+                                                            Agregar Comentario
+                                                        </button>
+                                                    </div>
+                                                    <template x-if="comentarios.length === 0">
+                                                        <div class="flex flex-col items-center py-8">
+                                                            <i class="fas fa-comments text-4xl text-gray-300 mb-2"></i>
+                                                            <p class="text-gray-500 text-center">No hay comentarios aún.<br>¡Sé el primero en comentar!</p>
+                                                        </div>
+                                                    </template>
+                                                    <template x-for="comentario in comentarios" :key="comentario.id_comentario">
+                                                        <div class="flex items-start space-x-4 bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-100 mb-2">
+                                                            <div class="flex-shrink-0">
+                                                                <div
+                                                                    class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow"
+                                                                    :title="comentario.nombre_usuario"
+                                                                >
+                                                                    <span x-text="comentario.nombre_usuario.charAt(0).toUpperCase()"></span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="flex-1 min-w-0">
+                                                                <div class="flex items-center gap-2">
+                                                                    <span class="font-semibold text-gray-900" x-text="comentario.nombre_usuario"></span>
+                                                                    <span class="text-xs text-gray-400" x-text="new Date(comentario.fecha_creacion).toLocaleString()"></span>
+                                                                </div>
+                                                                <p class="text-gray-700 mt-1 whitespace-pre-line" x-text="comentario.comentario"></p>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
                                 </div>
                             </div>
                         </div>
@@ -271,7 +311,7 @@
                 </template>
             </aside>
         </div>
-    </main>
+    </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/js-confetti@latest/dist/js-confetti.browser.js"></script>
 <script src="public/js/tomar_curso.js?v=<?= APP_VERSION ?>"></script>

@@ -110,15 +110,12 @@ class AutenticacionController
             return;
         }
 
-        // Acceder a la cookie y decodificar el token
         $token = $_COOKIE["sepcon_session_token"] ?? '';
         $secretKey = CLAVE_TOKEN;
         try {
             $decoded = JWT::decode($token, new Key($secretKey, 'HS256'));
-            // $tokenValido = true;
             $respuesta = $decoded->data;
         } catch (Exception $e) {
-            // $tokenValido = false;
             $respuesta = null;
         }
         

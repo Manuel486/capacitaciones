@@ -32,10 +32,10 @@
                             <p class="text-2xl font-bold text-gray-900" x-text="totalEstudiantes"></p>
                         </div>
 
-                        <div class="border-l-4 border-purple-600 pl-3">
+                        <!-- <div class="border-l-4 border-purple-600 pl-3">
                             <p class="text-xs text-gray-600 uppercase">Valoración Promedio</p>
                             <p class="text-2xl font-bold text-gray-900" x-text="valoracionPromedio"></p>
-                        </div>
+                        </div> -->
                     </div>
 
                     <div class="mt-6 pt-6 border-t">
@@ -81,7 +81,7 @@
                         <template x-if="!cargando">
                             <template x-for="(curso, index) in cursos" :key="curso.id_curso">
                                 <div class="flex flex-col sm:flex-row items-stretch bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 px-4 py-3 mb-2 border border-gray-100">
-                                    <div class="flex-shrink-0 w-full sm:w-20 h-32 sm:h-16 rounded overflow-hidden mb-3 sm:mb-0 sm:mr-4">
+                                    <div class="flex-shrink-0 w-full sm:w-40 h-32 sm:h-20 rounded overflow-hidden mb-3 sm:mb-0 sm:mr-4">
                                         <img :src="curso.imagen ? 'public/assets/portadas/' + curso.imagen : 'public/assets/portadas/plantilla.jpg'"
                                             alt="Imagen del curso" class="w-full h-full object-cover">
                                     </div>
@@ -92,7 +92,7 @@
                                         <p class="text-gray-600 text-xs truncate mb-1"
                                             x-text="curso.descripcion && curso.descripcion.length > 80 ? curso.descripcion.substring(0, 80) + '...' : curso.descripcion">
                                         </p>
-                                        <div class="flex items-center gap-4 text-xs text-gray-500">
+                                        <div class="flex items-center gap-4 text-md text-gray-500">
                                             <div class="flex items-center gap-1">
                                                 <i class="fas fa-users"></i>
                                                 <span x-text="curso.inscritos || 0"></span>

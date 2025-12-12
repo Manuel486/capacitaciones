@@ -8,7 +8,8 @@
             <h2 class="text-xl font-bold mb-4 text-gray-800">Tema</h2>
             <form class="space-y-4">
                 <div>
-                    <label class="block text-gray-700 font-medium mb-1">Nombre</label>
+                    <label class="block text-gray-700 font-medium mb-1">Nombre <span
+                            class="text-red-600 font-bold">*</span></label>
                     <input type="text" x-model="temaSeleccionado.nombre"
                         class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
                         placeholder="Nombre del tema" />
@@ -36,13 +37,15 @@
             <h2 class="text-xl font-bold mb-4 text-gray-800">Evaluación</h2>
             <form class="space-y-4">
                 <div>
-                    <label class="block text-gray-700 font-medium mb-1">Título</label>
+                    <label class="block text-gray-700 font-medium mb-1">Título <span
+                            class="text-red-600 font-bold">*</span></label>
                     <input type="text" x-model="evaluacionSeleccionada.titulo"
                         class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
                         placeholder="Título de la evaluación" />
                 </div>
                 <div>
-                    <label class="block text-gray-700 font-medium mb-1">Descripción</label>
+                    <label class="block text-gray-700 font-medium mb-1">Descripción <span
+                            class="text-red-600 font-bold">*</span></label>
                     <textarea x-model="evaluacionSeleccionada.descripcion"
                         class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
                         rows="3" placeholder="Descripción de la evaluación"></textarea>
@@ -61,16 +64,18 @@
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
-                            <input type="text" x-model="pregunta.texto"
+                            <input type="text" x-model="pregunta.contenido"
                                 class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400 mb-2"
                                 placeholder="Texto de la pregunta" />
                             <div class="space-y-2">
-                                <template x-for="(alternativa, alternativaIndex) in pregunta.alternativas" :key="alternativaIndex">
+                                <template x-for="(alternativa, alternativaIndex) in pregunta.alternativas"
+                                    :key="alternativaIndex">
                                     <div class="flex items-center space-x-2">
                                         <input type="text" x-model="alternativa.contenido"
                                             class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
                                             placeholder="Opción de respuesta" />
-                                        <input type="radio" :name="'correcta_' + index" :checked="alternativa.es_respuesta == 1"
+                                        <input type="radio" :name="'correcta_' + index"
+                                            :checked="alternativa.es_respuesta == 1"
                                             @change="marcarAlternativaCorrecta(index, alternativaIndex)" />
                                         <button type="button" @click="eliminarAlternativa(index, alternativaIndex)"
                                             class="text-red-600 hover:text-red-800">
@@ -91,7 +96,8 @@
                         class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
                         Cancelar
                     </button>
-                    <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                    <button @click="guardarEvaluacion()" type="button"
+                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
                         Guardar
                     </button>
                 </div>
@@ -108,13 +114,15 @@
             <h2 class="text-xl font-bold mb-4 text-gray-800">Clase</h2>
             <form class="space-y-4">
                 <div>
-                    <label class="block text-gray-700 font-medium mb-1">Título</label>
+                    <label class="block text-gray-700 font-medium mb-1">Título <span
+                            class="text-red-600 font-bold">*</span></label>
                     <input type="text" x-model="claseSeleccionada.titulo"
                         class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
                         placeholder="Título de la clase" />
                 </div>
                 <div>
-                    <label class="block text-gray-700 font-medium mb-1">Descripción</label>
+                    <label class="block text-gray-700 font-medium mb-1">Descripción <span
+                            class="text-red-600 font-bold">*</span></label>
                     <textarea x-model="claseSeleccionada.descripcion"
                         class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
                         rows="3" placeholder="Descripción de la clase"></textarea>
@@ -125,15 +133,23 @@
                         <i class="fas fa-cloud-upload-alt text-3xl mb-2"></i><br />
                         Arrastra o suelta el video aquí o haz clic para seleccionar
                     </label>
-                    <input type="file" id="videoClase" class="hidden" accept="video/*"
-                        @change="
-                            claseSeleccionada.video = $event.target.files[0];
-                            $nextTick(() => document.getElementById('previewVideoClase')?.load());
+                    <input type="file" id="videoClase" class="hidden" accept="video/*" @change="
+                        const file = $event.target.files[0];
+                        if (file && file.size > 40 * 1024 * 1024) {
+                                $dispatch('abrir-modal', {
+                                    titulo: 'Archivo demasiado grande',
+                                    mensaje: 'El tamaño máximo permitido para el video es de 40MB.',
+                                    tipo: 'info',
+                                    });
                             $event.target.value = null;
-                        " />
+                            return;
+                        }
+                        claseSeleccionada.video = file;
+                        $nextTick(() => document.getElementById('previewVideoClase')?.load());
+                        $event.target.value = null;
+                    " />
                     <div class="mt-4" x-show="claseSeleccionada.video" x-cloak>
-                        <video id="previewVideoClase" class="w-full rounded-lg shadow" controls
-                            :src="typeof claseSeleccionada.video === 'string'
+                        <video id="previewVideoClase" class="w-full rounded-lg shadow" controls :src="typeof claseSeleccionada.video === 'string'
                                 ? 'api/obtener_video?nombre=' + claseSeleccionada.video
                                 : (claseSeleccionada.video ? URL.createObjectURL(claseSeleccionada.video) : '')">
                             Tu navegador no soporta la reproducción de video.
@@ -163,19 +179,22 @@
             <h2 class="text-xl font-bold mb-4 text-gray-800">Anuncio</h2>
             <form class="space-y-4">
                 <div>
-                    <label class="block text-gray-700 font-medium mb-1">Titulo</label>
+                    <label class="block text-gray-700 font-medium mb-1">Titulo <span
+                            class="text-red-600 font-bold">*</span></label>
                     <input type="text" x-model="anuncioSeleccionado.titulo"
                         class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
                         placeholder="Titulo del anuncio" />
                 </div>
                 <div>
-                    <label class="block text-gray-700 font-medium mb-1">Descripción</label>
+                    <label class="block text-gray-700 font-medium mb-1">Descripción <span
+                            class="text-red-600 font-bold">*</span></label>
                     <textarea x-model="anuncioSeleccionado.descripcion"
                         class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
                         rows="3" placeholder="Descripción del anuncio"></textarea>
                 </div>
                 <div>
-                    <label class="block text-gray-700 font-medium mb-1">Contenido del anuncio</label>
+                    <label class="block text-gray-700 font-medium mb-1">Contenido del anuncio <span
+                            class="text-red-600 font-bold">*</span></label>
                     <textarea x-model="anuncioSeleccionado.anuncio"
                         class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
                         rows="3" placeholder="Contenido del anuncio"></textarea>
@@ -259,15 +278,27 @@
             <div x-show="vistaActiva === 'descripcionGeneral'" x-cloak class="bg-white rounded-lg shadow p-6">
                 <form class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
                     <div class="md:col-span-2 space-y-6">
+                        <div class="flex justify-end">
+                            <button @click="cambiarEstadoCurso()" :class="[
+                                'flex items-center gap-2 rounded transition px-3 py-1',
+                                curso.activo == 1 ? 'text-green-600' : 'text-gray-400'
+                                ]" :title="curso.activo == 1 ? 'Desactivar' : 'Activar'" type="button">
+                                <i
+                                    :class="curso.activo == 1 ? 'fas fa-toggle-on text-3xl' : 'fas fa-toggle-off text-3xl'"></i>
+                                <span x-text="curso.activo == 1 ? 'Curso activo' : 'Curso inactivo'"></span>
+                            </button>
+                        </div>
                         <div>
-                            <label class="block font-semibold mb-1" for="nombreCurso">Nombre del curso</label>
+                            <label class="block font-semibold mb-1" for="nombreCurso">Nombre del curso <span
+                                    class="text-red-600 font-bold">*</span></label>
                             <input type="text" x-model="curso.nombre"
                                 class="border rounded-md w-full p-2 focus:ring-2 focus:ring-blue-900 focus:border-none outline-none"
                                 placeholder="Nombre del curso">
                         </div>
 
                         <div>
-                            <label class="block font-semibold mb-1" for="descripcionCurso">Descripción del curso</label>
+                            <label class="block font-semibold mb-1" for="descripcionCurso">Descripción del curso <span
+                                    class="text-red-600 font-bold">*</span></label>
                             <textarea x-model="curso.descripcion"
                                 class="border rounded-md w-full p-2 min-h-[80px] focus:ring-2 focus:ring-blue-900 focus:border-none outline-none"
                                 placeholder="Descripción del curso"></textarea>
@@ -410,13 +441,13 @@
                                                 title="Eliminar">
                                                 <i class="fas fa-trash text-sm"></i>
                                             </button> -->
-                                            <button @click="item.detalle.activo = !item.detalle.activo" :class="[
+                                            <button @click="cambiarEstadoItem(item)" :class="[
                                                     'w-7 h-7 flex items-center justify-center rounded transition',
-                                                    item.detalle.activo ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-100'
-                                                ]" :title="item.detalle.activo ? 'Desactivar' : 'Activar'"
+                                                    item.detalle.activo == '1' ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-100'
+                                                ]" :title="item.detalle.activo == '1' ? 'Desactivar' : 'Activar'"
                                                 type="button">
                                                 <i
-                                                    :class="item.detalle.activo ? 'fas fa-toggle-on text-lg' : 'fas fa-toggle-off text-lg'"></i>
+                                                    :class="item.detalle.activo == '1' ? 'fas fa-toggle-on text-lg' : 'fas fa-toggle-off text-lg'"></i>
                                             </button>
                                         </div>
                                     </li>

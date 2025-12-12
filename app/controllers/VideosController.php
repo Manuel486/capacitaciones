@@ -81,7 +81,7 @@ class VideosController
         $fp = fopen($filePath, 'rb');
         fseek($fp, $start);
 
-        $buffer = 1024 * 8; // 8KB buffer
+        $buffer = 1024 * 8;
         while (!feof($fp) && ($pos = ftell($fp)) <= $end) {
             if ($pos + $buffer > $end) {
                 $buffer = $end - $pos + 1;

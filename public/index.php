@@ -1,7 +1,7 @@
 <?php
 
-require_once '../app/config/config.local.php';
-// require_once '../app/config/config.prod.php';
+// require_once '../app/config/config.local.php';
+require_once '../app/config/config.prod.php';
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -44,12 +44,17 @@ route($router, 'GET', '/api/cursos', 'CursosController', 'apiObtenerTodosLosCurs
 route($router, 'GET', '/api/curso_detalle', 'CursosController', 'apiObtenerCursoPorId');
 route($router, 'GET', '/api/curso', 'CursosController', 'apiObtenerCursoFormularioPorId');
 route($router, 'GET', '/api/curso_estructura', 'CursosController', 'apiObtenerEstructuraCurso');
+route($router, 'GET', '/api/obtener_comentarios', 'CursosController', 'apiObtenerComentariosPorItemId');
 route($router, 'POST', '/api/cursos/buscar', 'CursosController', 'apiCursoBuscarPorTermino');
 route($router, 'POST', '/api/mis_cursos', 'CursoUsuarioController', 'apiMisCursos');
 route($router, 'POST', '/api/formulario_curso', 'CursosController', 'apiFormularioCurso');
 route($router, 'POST', '/api/guardar_tema', 'CursosController', 'apiGuardarTema');
 route($router, 'POST', '/api/guardar_clase', 'CursosController', 'apiGuardarClase');
 route($router, 'POST', '/api/guardar_anuncio', 'CursosController', 'apiGuardarAnuncio');
+route($router, 'POST', '/api/guardar_evaluacion', 'CursosController', 'apiGuardarEvaluacion');
+route($router, 'POST', '/api/cambiar_estado_curso', 'CursosController', 'apiCambiarEstadoCurso');
+route($router, 'POST', '/api/cambiar_estado_item', 'CursosController', 'apiCambiarEstadoItem');
+route($router, 'POST', '/api/guardar_comentario', 'CursosController', 'apiGuardarComentario');
 
 
 // =============== CURSO USUARIO CONTROLLER ===============

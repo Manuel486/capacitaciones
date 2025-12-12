@@ -5,6 +5,8 @@ require_once __DIR__ . "/../helpers/ApiRespuesta.php";
 require_once __DIR__ . "/../helpers/AuthHelper.php";
 require_once __DIR__ . "/../helpers/generarIdUnico.php";
 
+date_default_timezone_set('America/Lima');
+
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
@@ -128,7 +130,6 @@ class CursosController
         $portada = $_FILES['imagen'] ?? null;
 
         if ($portada && $portada['error'] === UPLOAD_ERR_OK) {
-            // Obtener la extensión del archivo
             $extension = pathinfo($portada['name'], PATHINFO_EXTENSION);
             $nombreArchivo = generarIdUnico('PORTADA_') . '.' . $extension;
             $rutaDestino = PORTADAS . $nombreArchivo;
@@ -200,7 +201,6 @@ class CursosController
         $video = $_FILES['video'] ?? null;
 
         if ($video && $video['error'] === UPLOAD_ERR_OK) {
-            // Obtener la extensión del archivo
             $extension = pathinfo($video['name'], PATHINFO_EXTENSION);
             $nombreArchivo = generarIdUnico('VIDEO_') . '.' . $extension;
             $rutaDestino = VIDEOS . $nombreArchivo;
@@ -300,6 +300,158 @@ class CursosController
         }
     }
 
+    public function apiGuardarEvaluacion()
+    {
+        if (
+            !AuthHelper::verificarAccesoResponsable(
+                ['gestionar_cursos'],
+                'gestionar_cursos',
+                'Guardar nueva evaluación'
+            )
+        ) {
+            return;
+        }
+
+        $secretKey = CLAVE_TOKEN;
+        $sesion = JWT::decode($_COOKIE['sepcon_session_token'], new Key($secretKey, 'HS256'));
+
+        if (!empty($_POST['evaluacion'])) {
+            $datosEvaluacion = json_decode($_POST['evaluacion'], true);
+        } else {
+            $datosEvaluacion = null;
+        }
+
+        if (!$datosEvaluacion) {
+            echo ApiRespuesta::error("Datos de evaluación inválidos");
+            return;
+        }
+
+        if($datosEvaluacion['id_evaluacion']) {
+            $evaluacion = $this->cursoModel->editarEvaluacion($datosEvaluacion);
+        } else {
+            $evaluacion = $this->cursoModel->guardarEvaluacion($datosEvaluacion);
+        }
+
+        if ($evaluacion) {
+            echo ApiRespuesta::exitoso($evaluacion, "Cambios guardados exitosamente");
+        } else {
+            echo ApiRespuesta::error("Error al guardar la evaluación");
+        }
+    }
+
+    public function apiCambiarEstadoCurso()
+    {
+        if (
+            !AuthHelper::verificarAccesoResponsable(
+                ['gestionar_cursos'],
+                'gestionar_cursos',
+                'Cambiar estado del curso'
+            )
+        ) {
+            return;
+        }
+
+        $secretKey = CLAVE_TOKEN;
+        $sesion = JWT::decode($_COOKIE['sepcon_session_token'], new Key($secretKey, 'HS256'));
+
+        $idCurso = $_POST['id_curso'] ?? null;
+        $nuevoEstado = $_POST['activo'] ?? null;
+
+        if ($idCurso === null || $nuevoEstado === null) {
+            echo ApiRespuesta::error("Parámetros 'id_curso' y 'activo' son obligatorios");
+            return;
+        }
+
+        $resultado = $this->cursoModel->cambiarEstadoCurso($idCurso, $nuevoEstado);
+
+        if ($resultado) {
+            echo ApiRespuesta::exitoso(null, "Estado del curso cambiado exitosamente");
+        } else {
+            echo ApiRespuesta::error("Error al cambiar el estado del curso");
+        }
+    }
+
+    public function apiCambiarEstadoItem()
+    {
+        if (
+            !AuthHelper::verificarAccesoResponsable(
+                ['gestionar_cursos'],
+                'gestionar_cursos',
+                'Cambiar estado del ítem'
+            )
+        ) {
+            return;
+        }
+
+        $secretKey = CLAVE_TOKEN;
+        $sesion = JWT::decode($_COOKIE['sepcon_session_token'], new Key($secretKey, 'HS256'));
+
+        $idItem = $_POST['id_item'] ?? null;
+        $nuevoEstado = $_POST['activo'] ?? null;
+
+        if ($idItem === null || $nuevoEstado === null) {
+            echo ApiRespuesta::error("Parámetros 'id_item' y 'activo' son obligatorios");
+            return;
+        }
+
+        $resultado = $this->cursoModel->cambiarEstadoItem($idItem, $nuevoEstado);
+
+        if ($resultado) {
+            echo ApiRespuesta::exitoso(null, "Estado del ítem cambiado exitosamente");
+        } else {
+            echo ApiRespuesta::error("Error al cambiar el estado del ítem");
+        }
+    }
+
+    public function apiObtenerComentariosPorItemId()
+    {
+        $idItem = $_GET['id_item'] ?? null;
+
+        if (!$idItem) {
+            echo ApiRespuesta::error("El parámetro 'id_item' es obligatorio");
+            return;
+        }
+
+        $comentarios = $this->cursoModel->obtenerComentariosPorItemId($idItem);
+
+        echo ApiRespuesta::exitoso($comentarios, "Comentarios obtenidos exitosamente");
+    }
+
+    public function apiGuardarComentario()
+    {
+        $secretKey = CLAVE_TOKEN;
+        $sesion = JWT::decode($_COOKIE['sepcon_session_token'], new Key($secretKey, 'HS256'));
+
+        if (!empty($_POST['id_item'])) {
+            $idItem = $_POST['id_item'];
+        } else {
+            echo ApiRespuesta::error("El parámetro 'id_item' es obligatorio");
+            return;
+        }
+
+        if (!empty($_POST['comentario'])) {
+            $comentario = $_POST['comentario'];
+        } else {
+            echo ApiRespuesta::error("El parámetro 'comentario' es obligatorio");
+            return;
+        }
+
+        $datosComentario = [
+            'id_item' => $idItem,
+            'dni_usuario' => $sesion->data->dni,
+            'nombre_usuario' => $sesion->data->apellidos . ' ' . $sesion->data->nombres,
+            'comentario' => $comentario,
+            'fecha_creacion' => date('Y-m-d H:i:s')
+        ];
+
+        $comentario = $this->cursoModel->guardarComentario($datosComentario);
+
+        if ($comentario) {
+            echo ApiRespuesta::exitoso($comentario, "Comentario guardado exitosamente");
+        } else {
+            echo ApiRespuesta::error("Error al guardar el comentario");
+        }
+    }
 
 
 }
