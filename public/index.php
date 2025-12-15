@@ -1,7 +1,7 @@
 <?php
 
-// require_once '../app/config/config.local.php';
-require_once '../app/config/config.prod.php';
+require_once '../app/config/config.local.php';
+// require_once '../app/config/config.prod.php';
 
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -66,6 +66,9 @@ route($router, 'GET', '/api/obtener_todos_usuarios', 'UsuariosController', 'apiO
 
 // =============== VIDEOS CONTROLLER ===============
 route($router, 'GET', '/api/obtener_video', 'VideosController', 'apiObtenerVideoPorNombre');
+
+// =============== CERTIFICADOS CONTROLLER ===============
+route($router, 'GET', '/api/obtener_certificado', 'CertificadosController', 'apiObtenerCertificadoPorIdCursoIdUsuario');
 
 $match = $router->match();
 

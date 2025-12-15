@@ -2,6 +2,7 @@
 
 require_once __DIR__ . "/database/ConexionCapacitaciones.php";
 require_once __DIR__ . "/../helpers/generarIdUnico.php";
+require_once __DIR__ . "/../helpers/crearCertificado.php";
 
 class CursoUsuarioModel
 {
@@ -9,7 +10,7 @@ class CursoUsuarioModel
     {
     }
 
-    public function marcarItemCompletado($itemId, $cursoUsuarioId)
+    public function marcarItemCompletado($itemId, $cursoUsuarioId, $datosUsuario)
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
@@ -74,6 +75,31 @@ class CursoUsuarioModel
             $updateStmt = $pdo->prepare($updateCursoUsuarioQuery);
             $updateStmt->execute(['progreso' => $progreso, 'id_curso_usuario' => $cursoUsuarioId]);
 
+            // Si el progreso es 100%, marcar el curso como completado
+            if ($progreso >= 100) {
+                // Buscar el curso para saber si tiene certificado
+                $queryCurso = "SELECT c.tiene_certificacion, c.nombre  
+                                FROM curso c
+                                JOIN curso_usuario cu ON c.id_curso = cu.id_curso
+                                WHERE cu.id_curso_usuario = :id_curso_usuario";
+                $stmtCurso = $pdo->prepare($queryCurso);
+                $stmtCurso->execute(['id_curso_usuario' => $cursoUsuarioId]);
+                $curso = $stmtCurso->fetch(PDO::FETCH_ASSOC);
+
+                if($curso && $curso['tiene_certificacion'] == 1){
+                    $id_certificado = generarIdUnico("CER");
+                    $updateCertificadoQuery = "UPDATE curso_usuario SET certificado = :certificado WHERE id_curso_usuario = :id_curso_usuario";
+                    $updateCertificadoStmt = $pdo->prepare($updateCertificadoQuery);
+                    $updateCertificadoStmt->execute(['certificado' => $id_certificado, 'id_curso_usuario' => $cursoUsuarioId]);
+
+                    crearCertificado(
+                        $datosUsuario->apellidos . ' ' . $datosUsuario->nombres,
+                        $curso['nombre'],
+                    $id_certificado
+                    );
+                }
+            }
+
             return true;
         } catch (Exception $e) {
             return false;
@@ -135,6 +161,22 @@ class CursoUsuarioModel
             return $cursos;
         } catch (Exception $e) {
             return [];
+        }
+    }
+
+    public function obtenerCertificadoPorIdCursoIdUsuario($idCurso, $idUsuario)
+    {
+        $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
+        try {
+            $query = "SELECT cu.certificado, c.nombre AS nombre_curso
+                      FROM curso_usuario cu
+                      INNER JOIN curso c ON cu.id_curso = c.id_curso
+                      WHERE cu.id_curso = :id_curso AND cu.id_usuario = :id_usuario";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute(['id_curso' => $idCurso, 'id_usuario' => $idUsuario]);
+            return $stmt->fetchColumn();
+        } catch (Exception $e) {
+            return null;
         }
     }
 }

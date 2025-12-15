@@ -6,7 +6,7 @@
                 <i class="fas fa-times text-xl"></i>
             </button>
             <h2 class="text-xl font-bold mb-4 text-gray-800">Comentario</h2>
-            <form class="space-y-4">
+            <form class="space-y-4" @submit.prevent>
                 <div class="flex gap-4">
                     <label class="block text-gray-700 mb-2 font-bold">Valoración</label>
                     <div class="flex items-center space-x-1">
@@ -66,10 +66,20 @@
                                             x-text="(curso.valoracion_promedio ? curso.valoracion_promedio.toFixed(1) : '0') + '/5'"></span>
                                     </div>
                                 </div>
-                                <div>
-                                    <span class="text-gray-400">Creado por</span>
-                                    <span x-text="curso.instructor"></span>
+                                <div class="flex justify-between">
+                                    <div>
+                                        <span class="text-gray-400">Creado por</span>
+                                        <span x-text="curso.instructor"></span>
+                                    </div>
+                                    <div>
+                                        <span x-show="curso.tiene_certificacion == 1" 
+                                            class="flex items-center gap-1 text-white text-md font-medium ">
+                                            <i class="fas fa-award text-yellow-400"></i>
+                                            Incluy certificado
+                                        </span>
+                                    </div>
                                 </div>
+
                             </div>
                         </template>
                     </div>
@@ -117,7 +127,7 @@
                                             :key="'item-' + tema.id_tema + '-' + itemIndex">
                                             <div
                                                 class="p-3 md:p-4 border-b border-gray-100 flex items-center space-x-2 md:space-x-3">
-                                                <div class="flex-shrink-0">
+                                                <div class="">
                                                     <template x-if="item.tipo === 'clase'">
                                                         <i class="fas fa-play-circle text-gray-600 text-sm"></i>
                                                     </template>
@@ -177,7 +187,7 @@
                         <template x-for="valoracion in (curso?.valoraciones || [])" :key="valoracion.id_valoracion">
                             <div class="border border-gray-200 rounded-lg p-5 hover:shadow-md transition">
                                 <div class="flex items-start gap-4">
-                                    <div class="flex-shrink-0">
+                                    <div class="">
                                         <div
                                             class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
                                             <span x-text="valoracion.nombre_usuario.charAt(0).toUpperCase()"></span>
@@ -190,7 +200,7 @@
                                                 <h3 class="font-semibold text-gray-900"
                                                     x-text="valoracion.nombre_usuario"></h3>
                                                 <span class="text-xs text-gray-500"
-                                                    x-text="valoracion.fecha_registro"></span>
+                                                    x-text="new Date(valoracion.fecha_registro).toLocaleString()"></span>
                                             </div>
                                         </div>
 

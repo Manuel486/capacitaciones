@@ -20,7 +20,14 @@ function appComponente() {
       mensaje: "",
       tipo: "",
     },
+    menuAbierto: false,
     async iniciarSesion() {
+      this.abrirModalConDatos({
+        titulo: "Iniciando sesión",
+        mensaje: "Por favor, espera mientras verificamos tus credenciales.",
+        tipo: "cargando",
+      });
+
       try {
         this.credencialesInvalidas.activo = false;
         this.credencialesInvalidas.mensaje = "";
@@ -46,9 +53,17 @@ function appComponente() {
         }
       } catch (error) {
         console.error("Error al iniciar sesión:", error);
+      } finally {
+        this.cerrarModalDialogo();
       }
     },
     async cerrarSesion() {
+      this.abrirModalConDatos({
+        titulo: "Cerrando sesión",
+        mensaje: "Por favor, espera mientras cerramos tu sesión.",
+        tipo: "cargando",
+      });
+
       try {
         const respuesta = await fetch("logout", { method: "GET" });
         const data = await respuesta.json();
@@ -60,6 +75,8 @@ function appComponente() {
         }
       } catch (error) {
         console.error("Error al cerrar sesión:", error);
+      } finally {
+        this.cerrarModalDialogo();
       }
     },
     obtenerUsuarioLogueado(detail) {

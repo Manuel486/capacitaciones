@@ -34,7 +34,7 @@
                         </template>
                         <template x-if="!cargando">
                             <template x-for="(curso, index) in cursos" :key="curso.id_curso">
-                                <a class="cursor-pointer h-45"
+                                <a class="cursor-pointer h-50"
                                     :href="'/capacitaciones/curso?id_curso=' + curso.id_curso"
                                     x-transition:enter="transition ease-out duration-500"
                                     x-transition:enter-start="opacity-0 translate-y-4"
@@ -45,10 +45,17 @@
                                         <img :src="curso.imagen ? 'public/assets/portadas/' + curso.imagen : 'public/assets/portadas/plantilla.jpg'"
                                             alt="Imagen del curso" class="h-24 object-cover">
                                         <div class="p-2 flex-1 flex flex-col">
-                                            <h3 class="text-xs font-bold text-gray-900 mb-1" x-text="curso.nombre"></h3>
+                                            <h3 class="text-xs font-bold text-gray-900 mb-1" x-text="curso.nombre.length > 60 ? curso.nombre.substring(0, 60) + '...' : curso.nombre"></h3>
                                             <p class="text-gray-600 text-xs mb-1 max-h-50 flex-1 line-clamp-2"
                                                 x-text="curso.descripcion.length > 80 ? curso.descripcion.substring(0, 80) + '...' : curso.descripcion">
                                             </p>
+                                            <div class="flex justify-end items-center mt-2">
+                                                <span x-show="curso.tiene_certificacion == 1"
+                                                    class="flex items-center gap-1 text-gray-600 text-sm font-medium ">
+                                                    <i class="fas fa-award text-yellow-400"></i>
+                                                    Incluye certificado
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </a>

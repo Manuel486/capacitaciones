@@ -4,10 +4,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
+    <link rel="stylesheet" href="public/css/app.css?v=<?= APP_VERSION ?>" />
+    <script defer src="public/js/alpine.min.js"></script>
+    <link rel="stylesheet" href="public/fontawesome/css/all.min.css"/>
+    <script src="public/js/sortable.min.js"></script>
+    <link rel="icon" href="public/assets/favicon.ico" type="image/x-icon">
     <style>
         [x-cloak] {
             display: none !important;
@@ -17,7 +19,7 @@
 </head>
 
 <body class="<?= $vista === 'tomar_curso' ? 'bg-white' : 'bg-gray-50' ?>">
-    <div x-data="appComponente()" @abrir-modal.window="abrirModalConDatos($event.detail)" @obtener-usuario-logueado.window="obtenerUsuarioLogueado($event.detail)">
+    <div x-data="appComponente()" @abrir-modal.window="abrirModalConDatos($event.detail)" @cerrar-modal.window="cerrarModalDialogo()" @obtener-usuario-logueado.window="obtenerUsuarioLogueado($event.detail)">
 
         <div x-show="modalDialogo.activo" x-cloak class="fixed inset-0 flex items-center justify-center z-1000">
             <div class="fixed inset-0 bg-black/75"></div>
@@ -42,6 +44,12 @@
                             <template x-if="modalDialogo.tipo === 'exito'">
                                 <i class="fas fa-check-circle text-green-600 text-2xl"></i>
                             </template>
+                            <template x-if="modalDialogo.tipo === 'cargando'">
+                                <svg class="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                </svg>
+                            </template>
                         </div>
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                             <h3 class="text-center font-semibold text-gray-900" x-text="modalDialogo.titulo"></h3>
@@ -50,7 +58,7 @@
                             </div>
                         </div>
                         <div class="w-full mt-4 items-center justify-center flex">
-                            <button type="button"
+                            <button type="button" x-show="modalDialogo.tipo !== 'cargando'" x-cloak
                                 class="cursor-pointer rounded-md hover:bg-blue-900 px-3 py-2 text-sm font-semibold hover:text-white shadow-xs border bg-white border-blue-900 text-blue-900"
                                 @click="cerrarModalDialogo()">Cerrar</button>
                         </div>
@@ -109,17 +117,28 @@
             <nav class="bg-white shadow-md">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between items-center h-16">
-                        <div class="flex-shrink-0">
+                        <div>
                             <h1 class="text-2xl font-bold text-blue-900">SEPCON LEARN</h1>
                         </div>
+                        <div class="md:hidden">
+                            <button @click="menuAbierto = !menuAbierto" type="button"
+                                class="inline-flex items-center justify-center p-2 rounded-md text-blue-900 hover:text-white hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-900"
+                                aria-controls="mobile-menu" aria-expanded="false">
+                                <span class="sr-only">Abrir menú principal</span>
+                                <svg x-show="!menuAbierto" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                                <svg x-show="menuAbierto" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
                         <div class="hidden md:block">
-                            <div class="ml-10 flex gap-4">
-                                <a href="inicio" class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'inicio')
-                                    echo 'border-b-4 border-blue-900'; ?>">
+                            <div class="ml-10 flex gap-4 items-center">
+                                <a href="inicio" class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'inicio') echo 'border-b-4 border-blue-900'; ?>">
                                     Inicio
                                 </a>
-                                <a href="cursos" class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'cursos')
-                                    echo 'border-b-4 border-blue-900'; ?>">
+                                <a href="cursos" class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'cursos') echo 'border-b-4 border-blue-900'; ?>">
                                     Cursos
                                 </a>
                                 <template x-if="cargandoSesion">
@@ -133,14 +152,12 @@
                                         Iniciar Sesión
                                     </button>
                                 </div>
-                                <div x-show="!cargandoSesion && usuarioLogueado" x-cloak class="flex gap-4">
-                                    <a href="mis_cursos" class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'mis_cursos')
-                                        echo 'border-b-4 border-blue-900'; ?>">
+                                <div x-show="!cargandoSesion && usuarioLogueado" x-cloak class="flex gap-4 items-center">
+                                    <a href="mis_cursos" class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'mis_cursos') echo 'border-b-4 border-blue-900'; ?>">
                                         Mis Cursos
                                     </a>
                                     <a x-show="usuarioLogueado && usuarioLogueado.accesos && usuarioLogueado.accesos.includes('gestionar_cursos')"
-                                        href="gestionar_cursos" class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'gestionar_cursos')
-                                            echo 'border-b-4 border-blue-900'; ?>">
+                                        href="gestionar_cursos" class="text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-sm font-medium <?php if ($vista === 'gestionar_cursos') echo 'border-b-4 border-blue-900'; ?>">
                                         Gestionar Cursos
                                     </a>
                                     <button @click="cerrarSesion()"
@@ -149,6 +166,40 @@
                                     </button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:hidden" x-show="menuAbierto" x-transition x-cloak id="mobile-menu">
+                    <div class="px-2 pt-2 pb-3 space-y-1">
+                        <a href="inicio" class="block text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-base font-medium <?php if ($vista === 'inicio') echo 'border-l-4 border-blue-900'; ?>">
+                            Inicio
+                        </a>
+                        <a href="cursos" class="block text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-base font-medium <?php if ($vista === 'cursos') echo 'border-l-4 border-blue-900'; ?>">
+                            Cursos
+                        </a>
+                        <template x-if="cargandoSesion">
+                            <div class="flex items-center px-3 py-2 h-8 bg-gray-100 rounded-md">
+                                <span class="text-gray-700 text-sm">Cargando...</span>
+                            </div>
+                        </template>
+                        <div x-show="!cargandoSesion && !usuarioLogueado" x-cloak>
+                            <button @click="activarModalIniciarSesion(); menuAbierto = false"
+                                class="w-full bg-blue-900 text-white px-4 py-2 rounded-md text-base font-medium border hover:bg-white hover:border-blue-900 hover:text-blue-900">
+                                Iniciar Sesión
+                            </button>
+                        </div>
+                        <div x-show="!cargandoSesion && usuarioLogueado" x-cloak class="flex flex-col gap-2">
+                            <a href="mis_cursos" class="block text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-base font-medium <?php if ($vista === 'mis_cursos') echo 'border-l-4 border-blue-900'; ?>">
+                                Mis Cursos
+                            </a>
+                            <a x-show="usuarioLogueado && usuarioLogueado.accesos && usuarioLogueado.accesos.includes('gestionar_cursos')"
+                                href="gestionar_cursos" class="block text-gray-900 hover:text-blue-900 px-3 py-2 rounded-md text-base font-medium <?php if ($vista === 'gestionar_cursos') echo 'border-l-4 border-blue-900'; ?>">
+                                Gestionar Cursos
+                            </a>
+                            <button @click="cerrarSesion(); menuAbierto = false"
+                                class="w-full bg-red-600 cursor-pointer text-white px-4 py-2 rounded-md text-base font-medium border hover:bg-white hover:border-red-600 hover:text-red-600">
+                                Cerrar Sesión
+                            </button>
                         </div>
                     </div>
                 </div>

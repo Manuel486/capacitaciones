@@ -22,6 +22,8 @@ function cursoDetalleComponente() {
       if (data.exitoso) {
         this.curso = data.respuesta;
         this.cargando = false;
+      } else {
+        window.location.href = "inicio";
       }
     },
     seleccionarPestana(pestana) {
@@ -83,6 +85,12 @@ function cursoDetalleComponente() {
         return;
       }
 
+      this.$dispatch("abrir-modal", {
+        titulo: "Guardando valoración",
+        mensaje: "Por favor, espera mientras guardamos tu valoración.",
+        tipo: "cargando",
+      });
+
       try {
         let formData = new FormData();
         formData.append("id_curso", this.curso.id_curso);
@@ -111,6 +119,8 @@ function cursoDetalleComponente() {
         }
       } catch (error) {
         console.error("Error al guardar la valoración:", error);
+      } finally {
+        this.$dispatch("cerrar-modal");
       }
     },
     async validarUsuarioInscrito() {

@@ -2,7 +2,7 @@
     <div class="relative bg-gradient-to-r from-blue-900 to-blue-800 text-white">
         <div class="max-w-7xl mx-auto px-4 lg:px-8 relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
-                <h1 class="text-4xl md:text-4xl lg:text-4xl font-extrabold mb-6 leading-tight">
+                <h1 class="text-4xl mt-4 text-center md:mt-0 md:text-start font-extrabold mb-6 leading-tight">
                     Capacítate con SEPCON
                 </h1>
                 <p class="text-xl md:text-xl mb-8 text-blue-100 max-w-3xl leading-relaxed">
@@ -11,7 +11,7 @@
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4">
                     <a href="#cursos"
-                        class="bg-white text-blue-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                        class="bg-white text-blue-900 px-8 text-center py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
                         Curso Introductorio
                     </a>
                 </div>

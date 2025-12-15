@@ -6,7 +6,7 @@
                 <i class="fas fa-times text-xl"></i>
             </button>
             <h2 class="text-xl font-bold mb-4 text-gray-800">Tema</h2>
-            <form class="space-y-4">
+            <form class="space-y-4" @submit.prevent>
                 <div>
                     <label class="block text-gray-700 font-medium mb-1">Nombre <span
                             class="text-red-600 font-bold">*</span></label>
@@ -35,7 +35,7 @@
                 <i class="fas fa-times text-xl"></i>
             </button>
             <h2 class="text-xl font-bold mb-4 text-gray-800">Evaluación</h2>
-            <form class="space-y-4">
+            <form class="space-y-4" @submit.prevent>
                 <div>
                     <label class="block text-gray-700 font-medium mb-1">Título <span
                             class="text-red-600 font-bold">*</span></label>
@@ -112,7 +112,7 @@
                 <i class="fas fa-times text-xl"></i>
             </button>
             <h2 class="text-xl font-bold mb-4 text-gray-800">Clase</h2>
-            <form class="space-y-4">
+            <form class="space-y-4" @submit.prevent>
                 <div>
                     <label class="block text-gray-700 font-medium mb-1">Título <span
                             class="text-red-600 font-bold">*</span></label>
@@ -135,10 +135,10 @@
                     </label>
                     <input type="file" id="videoClase" class="hidden" accept="video/*" @change="
                         const file = $event.target.files[0];
-                        if (file && file.size > 40 * 1024 * 1024) {
+                        if (file && file.size > 20 * 1024 * 1024) {
                                 $dispatch('abrir-modal', {
                                     titulo: 'Archivo demasiado grande',
-                                    mensaje: 'El tamaño máximo permitido para el video es de 40MB.',
+                                    mensaje: 'El tamaño máximo permitido para el video es de 20MB.',
                                     tipo: 'info',
                                     });
                             $event.target.value = null;
@@ -177,7 +177,7 @@
                 <i class="fas fa-times text-xl"></i>
             </button>
             <h2 class="text-xl font-bold mb-4 text-gray-800">Anuncio</h2>
-            <form class="space-y-4">
+            <form class="space-y-4" @submit.prevent>
                 <div>
                     <label class="block text-gray-700 font-medium mb-1">Titulo <span
                             class="text-red-600 font-bold">*</span></label>
@@ -246,7 +246,7 @@
             </div>
         </div>
         <div x-show="!cargando" x-cloak>
-            <div class="flex justify-between mb-2">
+            <div class="flex justify-between mb-4 border-b-4 border-blue-900 pb-2">
                 <ul class="flex gap-2">
                     <li @click="activarVista('descripcionGeneral')" :class="{
                         'cursor-pointer px-4 py-2 rounded-t-lg font-semibold transition': true,
@@ -272,11 +272,12 @@
                 </ul>
                 <button type="button" @click="guardarCurso()"
                     class="bg-white text-green-700 border-2 border-green-700 px-6 py-2 rounded-lg shadow hover:bg-green-700 hover:text-white transition font-semibold flex items-center gap-2">
+                    <i class="fas fa-save"></i>
                     <span x-text="'Guardar Cambios'"></span>
                 </button>
             </div>
             <div x-show="vistaActiva === 'descripcionGeneral'" x-cloak class="bg-white rounded-lg shadow p-6">
-                <form class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+                <form class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start" @submit.prevent>
                     <div class="md:col-span-2 space-y-6">
                         <div class="flex justify-end">
                             <button @click="cambiarEstadoCurso()" :class="[
@@ -289,7 +290,7 @@
                             </button>
                         </div>
                         <div>
-                            <label class="block font-semibold mb-1" for="nombreCurso">Nombre del curso <span
+                            <label class="block font-semibold mb-1">Nombre del curso <span
                                     class="text-red-600 font-bold">*</span></label>
                             <input type="text" x-model="curso.nombre"
                                 class="border rounded-md w-full p-2 focus:ring-2 focus:ring-blue-900 focus:border-none outline-none"
@@ -297,7 +298,7 @@
                         </div>
 
                         <div>
-                            <label class="block font-semibold mb-1" for="descripcionCurso">Descripción del curso <span
+                            <label class="block font-semibold mb-1">Descripción del curso <span
                                     class="text-red-600 font-bold">*</span></label>
                             <textarea x-model="curso.descripcion"
                                 class="border rounded-md w-full p-2 min-h-[80px] focus:ring-2 focus:ring-blue-900 focus:border-none outline-none"
@@ -306,7 +307,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label class="block font-semibold mb-1" for="dificultadCurso">Dificultad</label>
+                                <label class="block font-semibold mb-1">Dificultad</label>
                                 <select x-model="curso.dificultad"
                                     class="border rounded-md w-full p-2 focus:ring-2 focus:ring-blue-900 focus:border-none outline-none">
                                     <option value="principiante">Principiante</option>
@@ -315,28 +316,38 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block font-semibold mb-1" for="duracionCurso">Duración (horas)</label>
+                                <label class="block font-semibold mb-1">Duración (horas)</label>
                                 <input type="number" x-model="curso.duracion"
                                     class="border rounded-md w-full p-2 focus:ring-2 focus:ring-blue-900 focus:border-none outline-none"
                                     placeholder="Duración en horas" min="1">
                             </div>
                         </div>
 
-                        <div>
-                            <label class="block font-semibold mb-1" for="accesoCurso">Tipo de Acceso</label>
-                            <select x-model="curso.acceso_libre"
-                                class="border rounded-md w-full p-2 focus:ring-2 focus:ring-blue-900 focus:border-none outline-none">
-                                <option value="1">Acceso Libre</option>
-                                <option value="0">Acceso Cerrado</option>
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1" x-show="curso.acceso_libre == 1">
-                                Nota: Acceso libre permite que cualquier persona pueda realizar el curso.
-                            </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block font-semibold mb-1">Tipo de Acceso</label>
+                                <select x-model="curso.acceso_libre"
+                                    class="border rounded-md w-full p-2 focus:ring-2 focus:ring-blue-900 focus:border-none outline-none">
+                                    <option value="1">Acceso Libre</option>
+                                    <option value="0">Acceso Cerrado</option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1" x-show="curso.acceso_libre == 1">
+                                    Nota: Acceso libre permite que cualquier persona pueda realizar el curso.
+                                </p>
+                            </div>
+                            <div>
+                                <label class="block font-semibold mb-1">Tiene certificación</label>
+                                <select x-model="curso.tiene_certificacion"
+                                    class="border rounded-md w-full p-2 focus:ring-2 focus:ring-blue-900 focus:border-none outline-none">
+                                    <option value="1">Sí</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="flex flex-col items-center justify-start gap-4">
                         <label class="block font-semibold mb-1" for="imagenCurso">Imagen referencial del curso</label>
-                        <input type="file" accept="image/*" @change="curso.imagen = $event.target.files[0]"
+                        <input type="file" accept="image/*" @change="cambiarImagenCurso($event)"
                             class="border rounded-md w-full p-2 bg-white file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:bg-blue-50 file:text-blue-900">
                         <div class="mt-2 flex items-center justify-center">
                             <template x-cloak x-if="curso.imagen && typeof curso.imagen === 'string'">
@@ -459,8 +470,24 @@
                 </ul>
             </div>
             <div x-show="vistaActiva === 'personasInscritas'" x-cloak>
+                <button @click="ocultarMostrarBuscadorDePersonas()"
+                    class="flex items-center gap-2 px-4 py-2 mb-4 rounded-lg shadow border border-blue-900 bg-white text-blue-900 hover:bg-blue-900 hover:text-white transition-all duration-300"
+                    :aria-expanded="!buscadorDePersonasOculto">
+                    <template x-if="buscadorDePersonasOculto">
+                        <i class="fas fa-eye-slash"></i>
+                    </template>
+                    <template x-if="!buscadorDePersonasOculto">
+                        <i class="fas fa-eye"></i>
+                    </template>
+                    <span x-text="buscadorDePersonasOculto ? 'Ocultar Buscador' : 'Mostrar Buscador'"></span>
+                </button>
                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-                    <div class="">
+                    <div x-show="buscadorDePersonasOculto" x-transition:enter="transition ease-out duration-400"
+                        x-transition:enter-start="opacity-0 -translate-x-10"
+                        x-transition:enter-end="opacity-100 translate-x-0"
+                        x-transition:leave="transition ease-in duration-300"
+                        x-transition:leave-start="opacity-100 translate-x-0"
+                        x-transition:leave-end="opacity-0 -translate-x-10">
                         <div class="bg-white rounded-lg shadow p-6 mb-4">
                             <h3 class="font-bold text-xl">Buscar personas</h3>
                             <input x-model="inputDisponibles" @input.debounce.500ms="buscarDisponibles()" type="text"
@@ -531,7 +558,7 @@
                             <div class="max-h-96 overflow-y-auto space-y-3">
                                 <template x-for="usuario in usuariosDisponibles" :key="usuario.dni">
                                     <div
-                                        class="border border-1 border-gray-200 rounded-lg p-4 flex items-center gap-4 hover:bg-gray-50 hover:cursor-pointer transition">
+                                        class="border border-gray-200 rounded-lg p-4 flex items-center gap-4 hover:bg-gray-50 hover:cursor-pointer transition">
                                         <input @change="seleccionarUsuario(usuario)" type="checkbox"
                                             class="accent-blue-600 h-5 w-5" :checked="usuario.seleccionado">
                                         <div class="flex-1">
@@ -559,7 +586,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="">
+                    <div :class="{'md:col-span-2': !buscadorDePersonasOculto}">
                         <div class="mb-4">
                             <div class="grid grid-cols-3 gap-4 items-center text-center">
                                 <div class="bg-white rounded-lg shadow p-6 ">
@@ -567,11 +594,11 @@
                                     <p class="text-md">Total inscritos</p>
                                 </div>
                                 <div class="bg-white rounded-lg shadow p-6 ">
-                                    <span class="font-bold text-red-900 text-lg">0</span>
+                                    <span class="font-bold text-red-900 text-lg" x-text="totalTerminados"></span>
                                     <p class="text-md">Total terminados</p>
                                 </div>
                                 <div class="bg-white rounded-lg shadow p-6 ">
-                                    <span class="font-bold text-yellow-900 text-lg">0</span>
+                                    <span class="font-bold text-yellow-900 text-lg" x-text="totalEnProceso"></span>
                                     <p class="text-md">Total en proceso</p>
                                 </div>
                             </div>
@@ -593,7 +620,7 @@
                                     <div x-show="usuariosInscritos.length > 0">
                                         <template x-for="usuario in usuariosInscritos" :key="'INSCRITO-' + usuario.dni">
                                             <div
-                                                class="border border-1 border-gray-200 rounded-lg p-4 mb-3 bg-gray-50 flex items-center justify-between hover:bg-blue-50 transition">
+                                                class="border border-gray-200 rounded-lg p-4 mb-3 bg-gray-50 flex items-center justify-between hover:bg-blue-50 transition">
                                                 <div class="flex items-center gap-4 flex-1">
                                                     <div
                                                         class="bg-blue-100 rounded-full h-12 w-12 flex items-center justify-center text-blue-700 font-bold text-lg">
@@ -606,6 +633,15 @@
                                                         <p class="text-sm text-gray-500"
                                                             x-text="'DNI: ' + usuario.dni + ' • Cargo: ' + usuario.dcargo">
                                                         </p>
+                                                        <div class="mt-1">
+                                                            <span class="text-xs text-green-700 font-semibold"
+                                                                x-text="'Avance: ' + obtenerProgresodelUsuario(usuario.dni) + '%'"></span>
+                                                            <div class="w-40 h-2 bg-gray-200 rounded mt-1">
+                                                                <div class="h-2 bg-green-500 rounded"
+                                                                    :style="'width:' + obtenerProgresodelUsuario(usuario.dni) + '%'">
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <button @click="quitarUsuarioInscrito(usuario)"

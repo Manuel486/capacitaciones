@@ -1,6 +1,8 @@
 {
     "require": {
         "altorouter/altorouter": "^2.0",
-        "firebase/php-jwt": "^6.4"
+        "firebase/php-jwt": "^6.4",
+        "ramsey/uuid": "^4.2",
+        "dompdf/dompdf": "^3.1"
     }
 }

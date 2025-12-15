@@ -124,11 +124,11 @@
                                             }" x-text="curso.activo == 1 ? 'Activo' : 'Inactivo'">
                                         </span>
                                         <a :href="'formulario_curso?id_curso=' + curso.id_curso"
-                                            class="text-center bg-blue-900 text-white px-3 py-1 rounded-lg w-full sm:w-25 text-xs font-semibold hover:bg-blue-800 transition">
+                                            class="cursor-pointer text-center bg-blue-900 text-white px-3 py-1 rounded-lg w-full sm:w-25 text-xs font-semibold hover:bg-blue-800 transition">
                                             <i class="fas fa-edit mr-1"></i>Editar
                                         </a>
                                         <a :href="'curso?id_curso=' + curso.id_curso"
-                                            class="text-center border border-blue-900 text-blue-900 px-3 py-1 w-full sm:w-25 rounded-lg text-xs font-semibold hover:bg-blue-900 hover:text-white transition">
+                                            class="cursor-pointer text-center border border-blue-900 text-blue-900 px-3 py-1 w-full sm:w-25 rounded-lg text-xs font-semibold hover:bg-blue-900 hover:text-white transition">
                                             <i class="fas fa-eye mr-1"></i>Ver
                                         </a>
                                     </div>

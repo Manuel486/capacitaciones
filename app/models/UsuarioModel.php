@@ -28,9 +28,9 @@ class UsuarioModel
             $usuarioData = $statement->fetch(PDO::FETCH_ASSOC);
 
             if ($usuarioData) {
-                if ($usuarioData['estado'] !== "AC") {
-                    return ["exitoso" => false, "error" => "Usuario inactivo. Por favor, contacte al administrador."];
-                }
+                // if ($usuarioData['estado'] !== "AC") {
+                //     return ["exitoso" => false, "error" => "Usuario inactivo. Por favor, contacte al administrador."];
+                // }
 
                 $sqlRol = "SELECT r.nombre
                            FROM usuario_rol ur

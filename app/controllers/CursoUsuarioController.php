@@ -27,9 +27,7 @@ class CursoUsuarioController
             return;
         }
 
-
-        $secretKey = CLAVE_TOKEN;
-        $sesion = JWT::decode($_COOKIE['sepcon_session_token'], new Key($secretKey, 'HS256'));
+        $sesion = JWT::decode($_COOKIE['sepcon_session_token'], new Key(CLAVE_TOKEN, 'HS256'));
 
         $cursos = $this->cursoUsuarioModel->obtenerMisCursos($sesion->data->id);
 
@@ -38,6 +36,19 @@ class CursoUsuarioController
 
     public function apiMarcarItemCompletado()
     {
+        if (
+            !AuthHelper::verificarAccesoResponsable(
+                ['tomar_curso'],
+                'tomar_curso',
+                'Marcar ítem como completado'
+            )
+        ) {
+            return;
+        }
+
+        $sesion = JWT::decode($_COOKIE['sepcon_session_token'], new Key(CLAVE_TOKEN, 'HS256'));
+
+
         $itemId = $_POST['item_id'] ?? null;
         $cursoUsuarioId = $_POST['curso_usuario_id'] ?? null;
 
@@ -45,12 +56,13 @@ class CursoUsuarioController
             echo ApiRespuesta::error("Los parámetros 'item_id' y 'curso_usuario_id' son obligatorios");
             return;
         }
-        $actualizado = $this->cursoUsuarioModel->marcarItemCompletado($itemId, $cursoUsuarioId);
+        $actualizado = $this->cursoUsuarioModel->marcarItemCompletado($itemId, $cursoUsuarioId, $sesion->data);
 
         echo ApiRespuesta::exitoso($actualizado, "Marcaddo como completado exitosamente");
     }
 
-    public function apiObtenerCursosCreados(){
+    public function apiObtenerCursosCreados()
+    {
         if (
             !AuthHelper::verificarAccesoResponsable(
                 ['gestionar_cursos'],

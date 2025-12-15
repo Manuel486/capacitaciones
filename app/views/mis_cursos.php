@@ -116,7 +116,7 @@
                                         <img :src="curso.imagen ? 'public/assets/portadas/' + curso.imagen : 'public/assets/portadas/plantilla.jpg'"
                                             alt="Imagen del curso" class="h-24 object-cover">
                                         <div class="p-2 flex-1 flex flex-col">
-                                            <h3 class="text-xs font-bold text-gray-900 mb-1" x-text="curso.nombre"></h3>
+                                            <h3 class="text-xs font-bold text-gray-900 mb-1 h-8" x-text="curso.nombre.length > 60 ? curso.nombre.substring(0, 60) + '...' : curso.nombre"></h3>
                                             <p class="text-gray-600 text-xs mb-4 h-10"
                                                 x-text="curso.descripcion.length > 80 ? curso.descripcion.substring(0, 80) + '...' : curso.descripcion">
                                             </p>
@@ -135,7 +135,7 @@
                                                 </a>
                                                 <a x-show="curso.progreso == 100"
                                                     href="public/certificados/certificado.pdf" target="_blank"
-                                                    class="flex items-center gap-1 text-gray-600 hover:text-blue-700 text-xs font-medium cursor-pointer">
+                                                    class="underline flex items-center gap-1 text-gray-600 hover:text-blue-700 text-xs font-medium cursor-pointer">
                                                     <i class="fas fa-award text-yellow-400"></i>
                                                     Certificado
                                                 </a>

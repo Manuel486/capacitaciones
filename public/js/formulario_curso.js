@@ -9,6 +9,7 @@ function nuevoCursoComponente() {
       dificultad: "principiante",
       duracion: 0,
       acceso_libre: 1,
+      tiene_certificacion: 1,
       temas: [],
       activo: 1,
     },
@@ -19,6 +20,7 @@ function nuevoCursoComponente() {
       orden: 0,
       activo: 1,
     },
+    progresoUsuarios: [],
     claseSeleccionada: {
       id_clase: null,
       id_tema: null,
@@ -54,6 +56,8 @@ function nuevoCursoComponente() {
     usuariosInscritosOriginal: [],
     usuariosInscritos: [],
     totalInscritos: 0,
+    totalTerminados: 0,
+    totalEnProceso: 0,
     personasEncontradas: 0,
     sltProyecto: "todos",
     sltCargo: "todos",
@@ -73,6 +77,10 @@ function nuevoCursoComponente() {
     guardandoAnuncio: false,
     guardandoEvaluacion: false,
     guardandoCursoGeneral: false,
+    buscadorDePersonasOculto: true,
+    ocultarMostrarBuscadorDePersonas() {
+      this.buscadorDePersonasOculto = !this.buscadorDePersonasOculto;
+    },
     async obtenerTodosLosUsuarios() {
       try {
         const respuesta = await fetch("api/obtener_todos_usuarios", {
@@ -241,18 +249,24 @@ function nuevoCursoComponente() {
     },
 
     async guardarCurso() {
-      if( this.guardandoCursoGeneral ) return;
+      if (this.guardandoCursoGeneral) return;
 
       if (!this.curso.nombre || !this.curso.descripcion) {
         this.$dispatch("abrir-modal", {
           titulo: "Advertencia",
-          mensaje: "Por favor, complete los campos de nombre y descripción del curso.",
+          mensaje:
+            "Por favor, complete los campos de nombre y descripción del curso.",
           tipo: "advertencia",
         });
         return;
       }
 
       this.guardandoCursoGeneral = true;
+      this.$dispatch("abrir-modal", {
+        titulo: "Guardando curso",
+        mensaje: "Por favor, espera mientras guardamos el curso.",
+        tipo: "cargando",
+      });
 
       try {
         const formData = new FormData();
@@ -276,7 +290,7 @@ function nuevoCursoComponente() {
         const data = await respuesta.json();
 
         if (data.exitoso) {
-          window.location.href = "formulario_curso?id_curso=" + data.respuesta;
+          if(!this.modoEdicion) window.location.href = "formulario_curso?id_curso=" + data.respuesta;
         } else {
           console.error("Error al guardar el curso:", data.mensaje);
         }
@@ -284,6 +298,7 @@ function nuevoCursoComponente() {
         console.error("Error en la petición:", error);
       } finally {
         this.guardandoCursoGeneral = false;
+        this.$dispatch("cerrar-modal");
       }
     },
 
@@ -409,9 +424,12 @@ function nuevoCursoComponente() {
             dificultad: data.respuesta.dificultad || "principiante",
             duracion: data.respuesta.duracion || 0,
             acceso_libre: data.respuesta.acceso_libre,
+            tiene_certificacion: data.respuesta.tiene_certificacion,
             temas: data.respuesta.temas || [],
             activo: data.respuesta.activo || 1,
           };
+
+          this.progresoUsuarios = data.respuesta.progresosUsuarios || [];
 
           if (Array.isArray(this.curso.temas) && this.curso.temas.length > 0) {
             this.curso.temas.forEach((tema) => {
@@ -428,6 +446,11 @@ function nuevoCursoComponente() {
 
             this.usuariosInscritosOriginal = [...this.usuariosInscritos];
             this.totalInscritos = this.usuariosInscritos.length;
+            this.totalTerminados = this.usuariosInscritos.filter(u => {
+              const progreso = this.obtenerProgresodelUsuario(u.dni);
+              return progreso == 100;
+            }).length;
+            this.totalEnProceso = this.totalInscritos - this.totalTerminados;
 
             this.usuariosOriginalesDisponibles =
               this.usuariosOriginalesDisponibles.filter(
@@ -436,12 +459,17 @@ function nuevoCursoComponente() {
             this.usuariosDisponibles = [...this.usuariosOriginalesDisponibles];
             this.personasEncontradas = this.usuariosDisponibles.length;
           }
+          this.cargando = false;
+        } else {
+          window.location.href = "inicio";
         }
       } catch (error) {
         console.error("Error al obtener el curso para edición:", error);
-      } finally {
-        this.cargando = false;
-      }
+      } 
+    },
+    obtenerProgresodelUsuario(dni) {
+      const progresoObj = this.progresoUsuarios.find((p => p.id_usuario === dni));
+      return progresoObj ? progresoObj.progreso : 0;
     },
     async cambiarEstadoCurso() {
       this.curso.activo = this.curso.activo == 1 ? 0 : 1;
@@ -504,7 +532,7 @@ function nuevoCursoComponente() {
       this.modalTema = true;
     },
     async guardarTema() {
-      if( this.guardandoTema ) return;
+      if (this.guardandoTema) return;
 
       if (!this.temaSeleccionado.nombre) {
         this.$dispatch("abrir-modal", {
@@ -516,6 +544,11 @@ function nuevoCursoComponente() {
       }
 
       this.guardandoTema = true;
+      this.$dispatch("abrir-modal", {
+        titulo: "Guardando tema",
+        mensaje: "Por favor, espera mientras guardamos el tema.",
+        tipo: "cargando",
+      });
 
       try {
         const formData = new FormData();
@@ -549,6 +582,7 @@ function nuevoCursoComponente() {
         console.error("Error al guardar el tema:", error);
       } finally {
         this.guardandoTema = false;
+        this.$dispatch("cerrar-modal");
       }
     },
     cerrarModalTema() {
@@ -630,7 +664,7 @@ function nuevoCursoComponente() {
       };
     },
     async guardarAnuncio() {
-      if( this.guardandoAnuncio ) return;
+      if (this.guardandoAnuncio) return;
 
       if (
         !this.anuncioSeleccionado.titulo ||
@@ -647,6 +681,11 @@ function nuevoCursoComponente() {
       }
 
       this.guardandoAnuncio = true;
+      this.$dispatch("abrir-modal", {
+        titulo: "Guardando anuncio",
+        mensaje: "Por favor, espera mientras guardamos el anuncio.",
+        tipo: "cargando",
+      });
 
       try {
         const formData = new FormData();
@@ -678,6 +717,7 @@ function nuevoCursoComponente() {
         console.error("Error al guardar el anuncio:", error);
       } finally {
         this.guardandoAnuncio = false;
+        this.$dispatch("cerrar-modal");
       }
     },
     agregarEvaluacionATema(tema) {
@@ -701,7 +741,7 @@ function nuevoCursoComponente() {
       };
     },
     async guardarEvaluacion() {
-      if( this.guardandoEvaluacion ) return;
+      if (this.guardandoEvaluacion) return;
 
       if (
         !this.evaluacionSeleccionada.titulo ||
@@ -738,20 +778,24 @@ function nuevoCursoComponente() {
           pregunta.alternativas.length === 0
         ) {
           this.$dispatch("abrir-modal", {
-        titulo: "Campos obligatorios",
-        mensaje: `La pregunta ${i + 1} no puede estar vacía y al menos debe tener una alternativa.`,
-        tipo: "info",
+            titulo: "Campos obligatorios",
+            mensaje: `La pregunta ${
+              i + 1
+            } no puede estar vacía y al menos debe tener una alternativa.`,
+            tipo: "info",
           });
           return;
         }
         for (const [j, alternativa] of pregunta.alternativas.entries()) {
           if (!alternativa.contenido) {
-        this.$dispatch("abrir-modal", {
-          titulo: "Campos obligatorios",
-          mensaje: `La alternativa ${j + 1} de la pregunta ${i + 1} no puede estar vacía.`,
-          tipo: "info",
-        });
-        return;
+            this.$dispatch("abrir-modal", {
+              titulo: "Campos obligatorios",
+              mensaje: `La alternativa ${j + 1} de la pregunta ${
+                i + 1
+              } no puede estar vacía.`,
+              tipo: "info",
+            });
+            return;
           }
         }
         const tieneRespuesta = pregunta.alternativas.some(
@@ -759,15 +803,22 @@ function nuevoCursoComponente() {
         );
         if (!tieneRespuesta) {
           this.$dispatch("abrir-modal", {
-        titulo: "Campos obligatorios",
-        mensaje: `La pregunta ${i + 1} debe tener una alternativa marcada como respuesta.`,
-        tipo: "info",
+            titulo: "Campos obligatorios",
+            mensaje: `La pregunta ${
+              i + 1
+            } debe tener una alternativa marcada como respuesta.`,
+            tipo: "info",
           });
           return;
         }
       }
 
       this.guardandoEvaluacion = true;
+      this.$dispatch("abrir-modal", {
+        titulo: "Guardando evaluación",
+        mensaje: "Por favor, espera mientras guardamos la evaluación.",
+        tipo: "cargando",
+      });
 
       try {
         const formData = new FormData();
@@ -801,7 +852,22 @@ function nuevoCursoComponente() {
         console.error("Error al guardar la evaluación:", error);
       } finally {
         this.guardandoEvaluacion = false;
+        this.$dispatch("cerrar-modal");
       }
+    },
+    cambiarImagenCurso(event) {
+      const file = event.target.files[0];
+      if (file && file.size > 5 * 1024 * 1024) {
+        this.$dispatch("abrir-modal", {
+          titulo: "Archivo demasiado grande",
+          mensaje: "El tamaño máximo permitido para el video es de 5MB.",
+          tipo: "info",
+        });
+        event.target.value = null;
+        return;
+      }
+
+      this.curso.imagen = file;
     },
     agregarPregunta() {
       this.evaluacionSeleccionada.preguntas.push({
@@ -849,7 +915,7 @@ function nuevoCursoComponente() {
       };
     },
     async guardarClase() {
-      if( this.guardandoClase ) return;
+      if (this.guardandoClase) return;
       if (
         !this.claseSeleccionada.titulo ||
         !this.claseSeleccionada.descripcion ||
@@ -865,6 +931,12 @@ function nuevoCursoComponente() {
       }
 
       this.guardandoClase = true;
+
+      this.$dispatch("abrir-modal", {
+        titulo: "Guardando clase",
+        mensaje: "Por favor, espera mientras guardamos la clase.",
+        tipo: "cargando",
+      });
 
       try {
         const formData = new FormData();
@@ -905,6 +977,7 @@ function nuevoCursoComponente() {
         console.error("Error al guardar la clase:", error);
       } finally {
         this.guardandoClase = false;
+        this.$dispatch("cerrar-modal");
       }
     },
     init() {

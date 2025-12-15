@@ -7,7 +7,7 @@
                 <i class="fas fa-times text-xl"></i>
             </button>
             <h2 class="text-xl font-bold mb-4 text-gray-800">Comentario</h2>
-            <form class="space-y-4">
+            <form class="space-y-4" @submit.prevent>
                 <div>
                     <textarea x-model="comentario"
                         class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
@@ -43,8 +43,8 @@
                     <div class="h-6 bg-gray-700 rounded w-64 animate-pulse"></div>
                 </template>
             </div>
-            <div :class="curso.progreso == 100 ? 'visible' : 'invisible'">
-                <a href="public/certificados/certificado.pdf" target="_blank"
+            <div :class="curso.progreso == 100 && curso.tiene_certificacion == 1 ? 'visible' : 'invisible'">
+                <a :href="'api/obtener_certificado?id_curso=' + obtenerId()" target="_blank"
                     class="flex items-center gap-2 p-1 border-2 border-blue-600 text-black font-medium px-4 rounded shadow-sm transition bg-white hover:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
                     <i class="fas fa-award text-blue-500 text-lg"></i>
                     Obtener Certificado
@@ -121,30 +121,34 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div x-show="modo_evaluacion"
+                                <div x-show="modo_evaluacion" :key="'eval-' + item_actual.id_item"
                                     class="bg-gray-100 w-full h-full p-5 flex items-start justify-center min-h-[800px]">
                                     <form class="bg-white shadow-md rounded-lg p-6 w-full max-w-lg"
                                         @submit.prevent="enviarEvaluacion">
-                                        <template x-for="(pregunta, index) in item_actual.detalle.preguntas">
+                                        <template x-for="(pregunta, index) in item_actual.detalle.preguntas"
+                                            :key="pregunta.id_pregunta">
                                             <div class="mb-6">
                                                 <h6 class="text-gray-800 font-semibold mb-2">
                                                     <span class="font-bold"
                                                         x-text="'Pregunta ' + (index+1) + ': '"></span>
                                                     <span x-text="pregunta.contenido"></span>
                                                 </h6>
-                                                <template
-                                                    x-for="(alternativa, alternativaIndex) in pregunta.alternativas"
-                                                    :key="alternativaIndex">
-                                                    <div class="flex items-center mb-2">
-                                                        <input type="radio" :name="'pregunta_' + pregunta.id_pregunta"
-                                                            :value="alternativa.id_alternativa"
-                                                            class="mr-2 text-blue-600 focus:ring-blue-500"
-                                                            :id="'id-' + alternativa.id_alternativa" required>
-                                                        <label class="text-gray-700"
-                                                            :for="'id-' + alternativa.id_alternativa"
-                                                            x-text="alternativa.contenido"></label>
-                                                    </div>
-                                                </template>
+                                                <div class="space-y-2">
+                                                    <template x-for="alternativa in pregunta.alternativas"
+                                                        :key="alternativa.id_alternativa">
+                                                        <div class="flex items-center">
+                                                            <input type="radio"
+                                                                :name="'pregunta_' + item_actual.id_item + '_' + pregunta.id_pregunta"
+                                                                :value="alternativa.id_alternativa"
+                                                                class="mr-2 text-blue-600 focus:ring-blue-500"
+                                                                :id="'radio-' + item_actual.id_item + '-' + alternativa.id_alternativa"
+                                                                required>
+                                                            <label class="text-gray-700 cursor-pointer"
+                                                                :for="'radio-' + item_actual.id_item + '-' + alternativa.id_alternativa"
+                                                                x-text="alternativa.contenido"></label>
+                                                        </div>
+                                                    </template>
+                                                </div>
                                             </div>
                                         </template>
                                         <div class="flex justify-end">
@@ -195,10 +199,8 @@
                                                 <div class="space-y-6">
                                                     <div class="flex justify-between items-center mb-4">
                                                         <h3 class="text-lg font-semibold text-gray-900">Comentarios</h3>
-                                                        <button
-                                                            @click="activarModalComentario()"
-                                                            class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition text-sm font-medium"
-                                                        >
+                                                        <button @click="activarModalComentario()"
+                                                            class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition text-sm font-medium">
                                                             <i class="fas fa-comment-medical"></i>
                                                             Agregar Comentario
                                                         </button>
@@ -206,25 +208,30 @@
                                                     <template x-if="comentarios.length === 0">
                                                         <div class="flex flex-col items-center py-8">
                                                             <i class="fas fa-comments text-4xl text-gray-300 mb-2"></i>
-                                                            <p class="text-gray-500 text-center">No hay comentarios aún.<br>¡Sé el primero en comentar!</p>
+                                                            <p class="text-gray-500 text-center">No hay comentarios
+                                                                aún.<br>¡Sé el primero en comentar!</p>
                                                         </div>
                                                     </template>
-                                                    <template x-for="comentario in comentarios" :key="comentario.id_comentario">
-                                                        <div class="flex items-start space-x-4 bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-100 mb-2">
-                                                            <div class="flex-shrink-0">
-                                                                <div
-                                                                    class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow"
-                                                                    :title="comentario.nombre_usuario"
-                                                                >
-                                                                    <span x-text="comentario.nombre_usuario.charAt(0).toUpperCase()"></span>
+                                                    <template x-for="comentario in comentarios"
+                                                        :key="comentario.id_comentario">
+                                                        <div
+                                                            class="flex items-start space-x-4 bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-100 mb-2">
+                                                            <div class="">
+                                                                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow"
+                                                                    :title="comentario.nombre_usuario">
+                                                                    <span
+                                                                        x-text="comentario.nombre_usuario.charAt(0).toUpperCase()"></span>
                                                                 </div>
                                                             </div>
                                                             <div class="flex-1 min-w-0">
                                                                 <div class="flex items-center gap-2">
-                                                                    <span class="font-semibold text-gray-900" x-text="comentario.nombre_usuario"></span>
-                                                                    <span class="text-xs text-gray-400" x-text="new Date(comentario.fecha_creacion).toLocaleString()"></span>
+                                                                    <span class="font-semibold text-gray-900"
+                                                                        x-text="comentario.nombre_usuario"></span>
+                                                                    <span class="text-xs text-gray-400"
+                                                                        x-text="new Date(comentario.fecha_creacion).toLocaleString()"></span>
                                                                 </div>
-                                                                <p class="text-gray-700 mt-1 whitespace-pre-line" x-text="comentario.comentario"></p>
+                                                                <p class="text-gray-700 mt-1 whitespace-pre-line"
+                                                                    x-text="comentario.comentario"></p>
                                                             </div>
                                                         </div>
                                                     </template>

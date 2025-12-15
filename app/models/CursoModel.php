@@ -14,7 +14,7 @@ class CursoModel
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
-            $query = "SELECT id_curso, nombre, descripcion, imagen FROM curso WHERE activo = 1 AND acceso_libre = 1";
+            $query = "SELECT id_curso, nombre, descripcion, imagen, tiene_certificacion FROM curso WHERE activo = 1 AND acceso_libre = 1";
             $stmt = $pdo->prepare($query);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -27,13 +27,17 @@ class CursoModel
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
-            $query = "SELECT c.id_curso, c.nombre, c.descripcion, c.imagen, c.activo, CONCAT(u.apellidos, ' ', u.nombres) AS instructor
+            $query = "SELECT c.id_curso, c.nombre, c.descripcion, c.imagen, c.activo, CONCAT(u.apellidos, ' ', u.nombres) AS instructor, c.tiene_certificacion
                       FROM capacitaciones.curso c
                       LEFT JOIN rrhh.tabla_aquarius u ON u.dni = c.id_autor
                       WHERE id_curso = :id_curso";
             $stmt = $pdo->prepare($query);
             $stmt->execute(['id_curso' => $idCurso]);
             $curso = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$curso) {
+                return false;
+            }
 
             // Obtener temas
             $temas = [];
@@ -106,7 +110,6 @@ class CursoModel
                     return $sum + $valoracion['valoracion'];
                 }, 0);
                 $curso['valoracion_promedio'] = round($sumaValoraciones / count($curso['valoraciones']));
-                // Redondear a un decimal
             } else {
                 $curso['valoracion_promedio'] = 0;
             }
@@ -130,7 +133,7 @@ class CursoModel
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
-            $queryCurso = "SELECT id_curso, nombre, descripcion, activo FROM curso WHERE id_curso = :id_curso";
+            $queryCurso = "SELECT id_curso, nombre, descripcion, activo, tiene_certificacion FROM curso WHERE id_curso = :id_curso";
             $stmtCurso = $pdo->prepare($queryCurso);
             $stmtCurso->execute(['id_curso' => $idCurso]);
             $curso = $stmtCurso->fetch(PDO::FETCH_ASSOC);
@@ -272,8 +275,8 @@ class CursoModel
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
             $idCurso = generarIdUnico("CUR");
-            $query = "INSERT INTO curso (id_curso, nombre, descripcion, dificultad, duracion, id_autor, imagen, activo, acceso_libre) 
-                      VALUES (:id_curso, :nombre, :descripcion, :dificultad, :duracion, :id_autor, :imagen, :activo, :acceso_libre)";
+            $query = "INSERT INTO curso (id_curso, nombre, descripcion, dificultad, duracion, id_autor, imagen, activo, acceso_libre, tiene_certificacion) 
+                      VALUES (:id_curso, :nombre, :descripcion, :dificultad, :duracion, :id_autor, :imagen, :activo, :acceso_libre, :tiene_certificacion)";
             $stmt = $pdo->prepare($query);
             $stmt->execute([
                 'id_curso' => $idCurso,
@@ -284,7 +287,8 @@ class CursoModel
                 'id_autor' => $datosCurso['id_autor'],
                 'imagen' => $datosCurso['imagen'],
                 'activo' => 1,
-                'acceso_libre' => $datosCurso['acceso_libre']
+                'acceso_libre' => $datosCurso['acceso_libre'],
+                'tiene_certificacion' => $datosCurso['tiene_certificacion']
             ]);
 
             if (!empty($idsUsuarios) && is_array($idsUsuarios)) {
@@ -312,7 +316,7 @@ class CursoModel
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
-            $query = "UPDATE curso SET nombre = :nombre, descripcion = :descripcion, dificultad = :dificultad, duracion = :duracion, imagen = :imagen, acceso_libre = :acceso_libre WHERE id_curso = :id_curso";
+            $query = "UPDATE curso SET nombre = :nombre, descripcion = :descripcion, dificultad = :dificultad, duracion = :duracion, imagen = :imagen, acceso_libre = :acceso_libre, tiene_certificacion= :tiene_certificacion WHERE id_curso = :id_curso";
             $stmt = $pdo->prepare($query);
             $stmt->execute([
                 'id_curso' => $datosCurso['id_curso'],
@@ -321,7 +325,8 @@ class CursoModel
                 'dificultad' => $datosCurso['dificultad'],
                 'duracion' => $datosCurso['duracion'],
                 'imagen' => $datosCurso['imagen'],
-                'acceso_libre' => $datosCurso['acceso_libre']
+                'acceso_libre' => $datosCurso['acceso_libre'],
+                'tiene_certificacion' => $datosCurso['tiene_certificacion']
             ]);
 
             $queryUsuariosActuales = "SELECT id_usuario FROM curso_usuario WHERE id_curso = :id_curso";
@@ -364,14 +369,14 @@ class CursoModel
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
-            $query = "SELECT id_curso, nombre, descripcion, dificultad, duracion, imagen, activo, acceso_libre FROM curso WHERE id_curso = :id_curso";
+            $query = "SELECT id_curso, nombre, descripcion, dificultad, duracion, imagen, activo, acceso_libre, tiene_certificacion FROM curso WHERE id_curso = :id_curso";
             $stmt = $pdo->prepare($query);
             $stmt->execute(['id_curso' => $idCurso]);
             $curso = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($curso) {
                 // Obtener usuarios inscritos
-                $queryUsuarios = "SELECT cu.id_usuario
+                $queryUsuarios = "SELECT cu.id_usuario, cu.progreso
                                   FROM curso_usuario cu
                                   WHERE cu.id_curso = :id_curso";
                 $stmtUsuarios = $pdo->prepare($queryUsuarios);
@@ -380,6 +385,8 @@ class CursoModel
                 $curso['usuariosInscritos'] = array_map(function ($u) {
                     return $u['id_usuario'];
                 }, $usuarios);
+
+                $curso['progresosUsuarios'] = $usuarios;
 
                 // Obtener temas e items
                 $queryTemas = "SELECT id_tema, id_curso, nombre, orden, activo FROM tema WHERE id_curso = :id_curso ORDER BY orden ASC";
@@ -985,7 +992,7 @@ class CursoModel
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
-            $query = "SELECT cv.id_valoracion, cv.id_curso, cv.id_usuario, cv.valoracion, cv.comentario, cv.nombre_usuario
+            $query = "SELECT cv.id_valoracion, cv.id_curso, cv.id_usuario, cv.valoracion, cv.comentario, cv.nombre_usuario, cv.fecha_registro
                       FROM curso_valoracion cv
                       WHERE cv.id_curso = :id_curso
                       ORDER BY cv.id_valoracion DESC";

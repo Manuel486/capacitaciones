@@ -4,7 +4,7 @@ function tomarCurso() {
   return {
     curso: {},
     cargando: true,
-    comentarios_cargando : false,
+    comentarios_cargando: false,
     item_actual: {},
     mostrarConfeti: false,
     modo_evaluacion: false,
@@ -31,11 +31,12 @@ function tomarCurso() {
               }
             }
           }
+          this.cargando = false;
+        } else {
+          window.location.href = "inicio";
         }
       } catch (error) {
         console.error("Error al obtener la estructura del curso:", error);
-      } finally {
-        this.cargando = false;
       }
     },
     activarModoEvaluacion() {
@@ -45,20 +46,34 @@ function tomarCurso() {
       const formData = new FormData(event.target);
       let correctas = 0;
       let totalPreguntas = this.item_actual.detalle.preguntas.length;
+      let preguntasRespondidas = 0;
 
       this.item_actual.detalle.preguntas.forEach((pregunta) => {
-        const respuestaSeleccionada = formData.get(
-          "pregunta_" + pregunta.id_pregunta
-        );
+        const nameInput =
+          "pregunta_" + this.item_actual.id_item + "_" + pregunta.id_pregunta;
+        const respuestaSeleccionada = formData.get(nameInput);
 
-        const alternativaCorrecta = pregunta.alternativas.find(
-          (alt) => alt.es_respuesta == 1
-        );
+        if (respuestaSeleccionada) {
+          preguntasRespondidas++;
 
-        if (respuestaSeleccionada == alternativaCorrecta.id_alternativa) {
-          correctas++;
+          const alternativaCorrecta = pregunta.alternativas.find(
+            (alt) => alt.es_respuesta == 1
+          );
+
+          if (respuestaSeleccionada == alternativaCorrecta.id_alternativa) {
+            correctas++;
+          }
         }
       });
+      
+      if (preguntasRespondidas < totalPreguntas) {
+        this.$dispatch("abrir-modal", {
+          titulo: "Evaluación incompleta",
+          mensaje: `Debes responder todas las preguntas. Has respondido ${preguntasRespondidas} de ${totalPreguntas}.`,
+          tipo: "advertencia",
+        });
+        return;
+      }
 
       const porcentaje = (correctas / totalPreguntas) * 100;
       const aprobo = porcentaje >= 70;
@@ -66,7 +81,9 @@ function tomarCurso() {
       if (aprobo) {
         this.$dispatch("abrir-modal", {
           titulo: "¡Felicidades!",
-          mensaje: `Has aprobado la evaluación con ${correctas} de ${totalPreguntas} respuestas correctas.`,
+          mensaje: `Has aprobado la evaluación con ${correctas} de ${totalPreguntas} respuestas correctas (${Math.round(
+            porcentaje
+          )}%).`,
           tipo: "exito",
         });
         this.marcarCompletado(this.item_actual.id_item);
@@ -74,11 +91,12 @@ function tomarCurso() {
       } else {
         this.$dispatch("abrir-modal", {
           titulo: "Evaluación no aprobada",
-          mensaje: `No alcanzaste el puntaje mínimo. Respuestas correctas: ${correctas} de ${totalPreguntas}. Inténtalo de nuevo.`,
+          mensaje: `Obtuviste ${Math.round(
+            porcentaje
+          )}% (${correctas}/${totalPreguntas} correctas). Necesitas al menos 70%. Inténtalo de nuevo.`,
           tipo: "advertencia",
         });
         this.modo_evaluacion = false;
-        event.target.reset();
       }
     },
     seleccionarItem(temaIndex, itemIndex) {
@@ -103,7 +121,14 @@ function tomarCurso() {
         return;
       }
 
-      this.item_actual = itemSeleccionado;
+      if (itemSeleccionado.tipo === "evaluacion") {
+        this.modo_evaluacion = false;
+        this.$nextTick(() => {
+          this.item_actual = itemSeleccionado;
+        });
+      } else {
+        this.item_actual = itemSeleccionado;
+      }
 
       if (
         this.item_actual.tipo === "anuncio" &&
@@ -252,6 +277,13 @@ function tomarCurso() {
         });
         return;
       }
+
+      this.$dispatch("abrir-modal", {
+        titulo: "Guardando comentario",
+        mensaje: "Por favor, espera mientras guardamos tu comentario.",
+        tipo: "cargando",
+      });
+
       try {
         let formData = new FormData();
         formData.append("id_item", this.item_actual.id_item);
@@ -275,10 +307,18 @@ function tomarCurso() {
             mensaje: data.mensaje || "Error al guardar el comentario.",
             tipo: "error",
           });
-        } 
+        }
       } catch (error) {
         console.error("Error al guardar el comentario:", error);
+      } finally {
+        this.$dispatch("cerrar-modal");
       }
+    },
+    obtenerId() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const id_curso = urlParams.get("id_curso");
+
+      return id_curso;
     },
     cerrarConfeti() {
       this.mostrarConfeti = false;
