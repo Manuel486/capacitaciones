@@ -134,7 +134,7 @@
                                                     Continuar
                                                 </a>
                                                 <a x-show="curso.progreso == 100"
-                                                    href="public/certificados/certificado.pdf" target="_blank"
+                                                    :href="'api/obtener_certificado?id_curso=' + curso.id_curso" target="_blank"
                                                     class="underline flex items-center gap-1 text-gray-600 hover:text-blue-700 text-xs font-medium cursor-pointer">
                                                     <i class="fas fa-award text-yellow-400"></i>
                                                     Certificado

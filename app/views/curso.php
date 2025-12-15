@@ -75,7 +75,7 @@
                                         <span x-show="curso.tiene_certificacion == 1" 
                                             class="flex items-center gap-1 text-white text-md font-medium ">
                                             <i class="fas fa-award text-yellow-400"></i>
-                                            Incluy certificado
+                                            Incluye certificado
                                         </span>
                                     </div>
                                 </div>

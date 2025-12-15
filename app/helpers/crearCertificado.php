@@ -63,8 +63,8 @@ function crearCertificado($nombreUsuario, $nombreCurso, $idCertificado)
                 font-weight: 600;
             }
             .nombre {
-                font-family: 'Brush Script MT', 'Lucida Handwriting', cursive;
-                font-size: 35px;
+                font-family: 'Georgia', serif;
+                font-size: 25px;
                 font-weight: normal;
                 color: #1a3a6b;
                 margin: 15px 0;
