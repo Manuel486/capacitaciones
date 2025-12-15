@@ -1,7 +1,7 @@
 <?php
 
-require_once '../app/config/config.local.php';
-// require_once '../app/config/config.prod.php';
+// require_once '../app/config/config.local.php';
+require_once '../app/config/config.prod.php';
 
 require __DIR__ . '/../vendor/autoload.php';
 

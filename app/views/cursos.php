@@ -34,7 +34,7 @@
                         </template>
                         <template x-if="!cargando">
                             <template x-for="(curso, index) in cursos" :key="curso.id_curso">
-                                <a class="cursor-pointer h-50"
+                                <a class="cursor-pointer h-60"
                                     :href="'/capacitaciones/curso?id_curso=' + curso.id_curso"
                                     x-transition:enter="transition ease-out duration-500"
                                     x-transition:enter-start="opacity-0 translate-y-4"

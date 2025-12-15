@@ -16,6 +16,6 @@ define("DATABASE_DOCUMENTOS_USER","remoto");
 define("DATABASE_DOCUMENTOS_PASSWORD","s3pc0n2020");
 define("BASE_URL", "/capacitaciones/");
 
-define('APP_VERSION', '1.0.1');
+define('APP_VERSION', '1.0.3');
 
 define('CLAVE_TOKEN', 'sepconRRHH2025');

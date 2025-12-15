@@ -98,6 +98,9 @@ function tomarCurso() {
         });
         this.modo_evaluacion = false;
       }
+
+      // Limpiar el formulario
+      event.target.reset();
     },
     seleccionarItem(temaIndex, itemIndex) {
       if (this.modo_evaluacion) {
