@@ -137,7 +137,7 @@
                         </template>
                     </div>
 
-                    <div x-show="!cargando && cursos.length === 0" class="text-center py-12">
+                    <div x-show="!cargando && cursos.length === 0" class="text-center py-12" x-cloak>
                         <i class="fas fa-book-open text-6xl text-gray-300 mb-4"></i>
                         <p class="text-gray-500 text-lg mb-4">Aún no has creado ningún curso</p>
                     </div>

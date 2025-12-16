@@ -5,6 +5,11 @@ function misCursosComponente() {
         cursosOriginal: [],
         inputCurso: '',
         pestaniaSeleccionada: 'todos',
+        cursosInscritos: 0,
+        cursosCompletados: 0,
+        cursosEnProceso: 0,
+        totalCertificados: 0,
+        progresoGeneral: 0,
         async obtenerCursos() {
             let formData = new FormData();
             formData.append('id_usuario', 'USR002');
@@ -17,6 +22,14 @@ function misCursosComponente() {
                 this.cursos = data.respuesta;
                 this.cursosOriginal = data.respuesta;
                 this.cargando = false;
+
+                // Calcular estadísticas
+                this.cursosInscritos = this.cursosOriginal.length;
+                this.cursosCompletados = this.cursosOriginal.filter(curso => curso.progreso == 100).length;
+                this.cursosEnProceso = this.cursosOriginal.filter(curso => curso.progreso > 0 && curso.progreso < 100).length;
+                this.totalCertificados = this.cursosOriginal.filter(curso => curso.progreso == 100 && curso.certificado_obtenido).length;
+                const totalProgreso = this.cursosOriginal.reduce((sum, curso) => sum + parseInt(curso.progreso), 0);
+                this.progresoGeneral = this.cursosOriginal.length > 0 ? Math.round(totalProgreso / this.cursosOriginal.length) : 0;
             }
         },
         async buscarCurso() {

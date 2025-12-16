@@ -40,6 +40,7 @@ route($router, 'GET', '/formulario_curso', 'CapacitacionesController', 'vistaFor
 
 // =============== CURSOS CONTROLLER ===============
 route($router, 'GET', '/api/cursos', 'CursosController', 'apiObtenerTodosLosCurso');
+route($router, 'GET', '/api/cursos_top', 'CursosController', 'apiObtenerTodosLosCursosTop');
 route($router, 'GET', '/api/curso_detalle', 'CursosController', 'apiObtenerCursoPorId');
 route($router, 'GET', '/api/curso', 'CursosController', 'apiObtenerCursoFormularioPorId');
 route($router, 'GET', '/api/curso_estructura', 'CursosController', 'apiObtenerEstructuraCurso');

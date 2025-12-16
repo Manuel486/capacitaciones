@@ -23,6 +23,19 @@ class CursoModel
         }
     }
 
+    public function listarCursosTop()
+    {
+        $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
+        try {
+            $query = "SELECT id_curso, nombre, descripcion, imagen, tiene_certificacion FROM curso WHERE activo = 1 AND acceso_libre = 1 LIMIT 5";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+
     public function obtenerCursoPorId($idCurso)
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();

@@ -26,6 +26,13 @@ class CursosController
         echo ApiRespuesta::exitoso($cursos, "Cursos obtenidos exitosamente");
     }
 
+    public function apiObtenerTodosLosCursosTop()
+    {
+        $cursos = $this->cursoModel->listarCursosTop();
+
+        echo ApiRespuesta::exitoso($cursos, "Cursos top obtenidos exitosamente");
+    }
+
     public function apiObtenerEstructuraCurso()
     {
         if (

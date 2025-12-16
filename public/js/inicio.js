@@ -1,11 +1,18 @@
 function inicioComponente() {
   return {
     cursos: [],
+    cargandoCursos: true,
     async obtenerCursos() {
-      const respuesta = await fetch("api/cursos");
-      const data = await respuesta.json();
-      if (data.exitoso) {
-        this.cursos = data.respuesta;
+      try {
+        const respuesta = await fetch("api/cursos_top");
+        const data = await respuesta.json();
+        if (data.exitoso) {
+          this.cursos = data.respuesta;
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        this.cargandoCursos = false;
       }
     },
     init() {

@@ -28,6 +28,21 @@
             <p class="text-gray-600 text-lg">Descubre nuestra selección de cursos más populares</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-y-8 gap-x-4">
+            <template x-if="cargandoCursos">
+                <template x-for="n in 5" :key="n">
+                    <div
+                        class="bg-white rounded-lg h-full shadow-md hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden transform hover:-translate-y-1">
+                        <div class="flex justify-center items-center h-24 w-full">
+                            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-900">
+                            </div>
+                        </div>
+                        <div class="p-2 flex-1 flex flex-col">
+                            <div class="h-2 bg-gray-400 rounded animate-pulse mb-4"></div>
+                            <div class="h-5 bg-gray-400 rounded animate-pulse mb-4"></div>
+                        </div>
+                    </div>
+                </template>
+            </template>
             <template x-for="(curso, index) in cursos" :key="curso.id_curso">
                 <div x-transition:enter="transition ease-out duration-500"
                     x-transition:enter-start="opacity-0 translate-y-4"

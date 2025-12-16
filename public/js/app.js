@@ -45,6 +45,8 @@ function appComponente() {
           this.sesion.password = "";
           this.cerrarModalIniciarSesion();
           this.credencialesInvalidas.activo = false;
+
+          window.location.reload();
         } else {
           this.credencialesInvalidas.activo = true;
           this.credencialesInvalidas.mensaje =

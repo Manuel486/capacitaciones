@@ -50,12 +50,12 @@
                         <template x-if="cargando">
                             <div>
                                 <h1 class="h-6 bg-gray-700 rounded w-64 animate-pulse mb-4"></h1>
-                                <div class="h-6 w-100 bg-gray-700 rounded w-64 animate-pulse mb-4"></div>
+                                <div class="h-6 bg-gray-700 rounded w-64 animate-pulse mb-4"></div>
                             </div>
                         </template>
                         <template x-if="!cargando && curso">
                             <div>
-                                <h1 class="text-3xl font-bold mb-4" x-text="curso.nombre"></h1>
+                                <h1 class="text-2xl font-bold mb-4" x-text="curso.nombre"></h1>
                                 <div class="flex items-center gap-6 mb-4">
                                     <div class="flex items-center gap-1 mb-3">
                                         <template x-for="star in 5" :key="star">
@@ -110,7 +110,7 @@
                     </div>
                 </div>
 
-                <div x-show="pestaniaActiva === 'contenido'" class="bg-white rounded-lg shadow p-6 mb-6">
+                <div x-show="pestaniaActiva === 'contenido'" class="bg-white rounded-lg shadow p-6 mb-6" x-cloak>
                     <p class="text-md mb-4" x-text="curso?.descripcion || ''"></p>
                     <h5 class="text-xl font-bold mb-4">Contenido del curso</h5>
                     <div class="space-y-2">
@@ -156,7 +156,7 @@
                     </div>
                 </div>
 
-                <div x-show="pestaniaActiva === 'publicaciones'" class="bg-white rounded-lg shadow p-6 mb-6">
+                <div x-show="pestaniaActiva === 'publicaciones'" class="bg-white rounded-lg shadow p-6 mb-6" x-cloak>
                     <h2 class="text-2xl font-bold mb-4">Publicaciones</h2>
                     <div class="space-y-4">
                         <template
@@ -173,7 +173,7 @@
                     </div>
                 </div>
 
-                <div x-show="pestaniaActiva === 'comentarios'" class="bg-white rounded-lg shadow p-6 mb-6">
+                <div x-show="pestaniaActiva === 'comentarios'" class="bg-white rounded-lg shadow p-6 mb-6" x-cloak>
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-800">Comentarios</h2>
                         <button @click="agregarValoracion()"

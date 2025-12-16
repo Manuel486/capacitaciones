@@ -28,7 +28,7 @@
     </div>
 
     <div class="bg-gray-900 text-white shadow">
-        <div class="max-w-screen-2xl mx-auto px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between">
+        <div class="max-w-screen-3xl mx-auto px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between">
             <div class="flex gap-4 items-center">
                 <div>
                     <a :href="'mis_cursos'"
@@ -37,13 +37,13 @@
                     </a>
                 </div>
                 <template x-if="!cargando && curso.nombre">
-                    <h1 class="text-xl font-semibold" x-text="curso.nombre"></h1>
+                    <h1 class="text-md font-semibold" x-text="curso.nombre"></h1>
                 </template>
                 <template x-if="cargando">
                     <div class="h-6 bg-gray-700 rounded w-64 animate-pulse"></div>
                 </template>
             </div>
-            <div :class="curso.progreso == 100 && curso.tiene_certificacion == 1 ? 'visible' : 'invisible'">
+            <div x-show="curso.progreso == 100 && curso.tiene_certificacion == 1" x-cloak>
                 <a :href="'api/obtener_certificado?id_curso=' + obtenerId()" target="_blank"
                     class="flex items-center gap-2 p-1 border-2 border-blue-600 text-black font-medium px-4 rounded shadow-sm transition bg-white hover:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
                     <i class="fas fa-award text-blue-500 text-lg"></i>
@@ -67,10 +67,10 @@
         </div>
     </div>
 
-    <div class="max-w-screen-2xl mx-auto">
-        <div class="grid grid-cols-1 lg:grid-cols-7">
+    <div class="max-w-screen-3xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-8">
 
-            <section class="order-1 col-span-5 lg:order-3">
+            <section class="order-1 col-span-6 lg:order-3">
                 <template x-if="cargando">
                     <div class="flex items-center justify-center min-h-[400px] bg-gray-100">
                         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900"></div>
@@ -247,7 +247,7 @@
             </section>
 
             <aside
-                class="col-span-2 bg-white border-t lg:border-t-0 lg:border-l border-gray-200 overflow-hidden flex flex-col order-2 lg:order-2 max-h-[500px] lg:max-h-screen">
+                class="col-span-2 bg-white border-t lg:border-t-0  border-gray-300 overflow-hidden flex flex-col order-2 lg:order-2 max-h-[500px] lg:max-h-screen">
                 <div class="p-4 border-b border-gray-200">
                     <h3 class="font-semibold text-gray-900 text-sm md:text-base">Contenido del curso</h3>
                 </div>
