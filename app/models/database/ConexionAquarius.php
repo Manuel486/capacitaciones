@@ -1,6 +1,6 @@
 <?php
 
-class ConexionCapacitaciones
+class ConexionAquarius
 {
     private static $instancia;
     private $conexion;
@@ -8,18 +8,18 @@ class ConexionCapacitaciones
     public function __construct()
     {
         try {
-            $pdo = new PDO(DATABASE_CAPACITACIONES_URL, DATABASE_CAPACITACIONES_USER, DATABASE_CAPACITACIONES_PASSWORD);
-            $pdo->exec("SET CHARACTER SET utf8");
+            $pdo = new PDO(DATABASE_AQUARIUS_URL, DATABASE_AQUARIUS_USER, DATABASE_AQUARIUS_PASSWORD);
+            // $pdo->exec("SET CHARACTER SET utf8");
             $this->conexion = $pdo;
         } catch (PDOException $e) {
-            throw new Exception("Error al conectarse a la base de datos de capacitaciones.");
+            throw new Exception("Error al conectarse a la base de datos de aquarius.");
         }
     }
 
     public static function getInstancia()
     {
         if (self::$instancia == null) {
-            self::$instancia = new ConexionCapacitaciones();
+            self::$instancia = new ConexionAquarius();
         }
 
         return self::$instancia;

@@ -28,7 +28,7 @@
     </div>
 
     <div class="bg-gray-900 text-white shadow">
-        <div class="max-w-screen-3xl mx-auto px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between">
+        <div class="mx-auto px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between">
             <div class="flex gap-4 items-center">
                 <div>
                     <a :href="'mis_cursos'"
@@ -68,9 +68,9 @@
     </div>
 
     <div class="max-w-screen-3xl mx-auto">
-        <div class="grid grid-cols-1 lg:grid-cols-8">
+        <div class="grid grid-cols-1 lg:grid-cols-7">
 
-            <section class="order-1 col-span-6 lg:order-3">
+            <section class="order-1 col-span-5 lg:order-3">
                 <template x-if="cargando">
                     <div class="flex items-center justify-center min-h-[400px] bg-gray-100">
                         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900"></div>

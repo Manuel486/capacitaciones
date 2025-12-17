@@ -99,7 +99,7 @@ function nuevoCursoComponente() {
 
           const proyectos = [
             ...new Set(
-              data.respuesta.map((usuario) => usuario.dcostos).filter((p) => p)
+              data.respuesta.map((usuario) => usuario.ccostos + ' ' + usuario.dcostos).filter((p) => p)
             ),
           ].sort();
           const cargos = [
@@ -373,7 +373,7 @@ function nuevoCursoComponente() {
         this.usuariosDisponibles = [...this.usuariosOriginalesDisponibles];
       } else {
         this.usuariosDisponibles = this.usuariosOriginalesDisponibles.filter(
-          (usuario) => usuario.dcostos === proyecto
+          (usuario) => usuario.ccostos + ' ' + usuario.dcostos === proyecto
         );
       }
 

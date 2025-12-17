@@ -3,6 +3,7 @@
 require_once __DIR__ . "/database/ConexionCapacitaciones.php";
 require_once __DIR__ . "/database/ConexionRRHH.php";
 require_once __DIR__ . "/database/ConexionDocumentos.php";
+require_once __DIR__ . "/database/ConexionAquarius.php";
 
 class UsuarioModel
 {
@@ -157,16 +158,43 @@ class UsuarioModel
         }
     }
 
+    // public function obtenerTodosLosUsuarios()
+    // {
+    //     $pdo = ConexionRRHH::getInstancia()->getConexion();
+    //     try {
+    //         $sql = "SELECT * FROM tabla_aquarius ta
+    //                 WHERE ta.freg = (
+    //                     SELECT MAX(freg) FROM tabla_aquarius WHERE dni = ta.dni
+    //                 )
+    //                 GROUP BY ta.dni
+    //                 ORDER BY ta.apellidos, ta.nombres";
+    //         $statement = $pdo->prepare($sql);
+    //         $statement->execute();
+    //         $usuarios = $statement->fetchAll(PDO::FETCH_ASSOC);
+    //         return $usuarios;
+    //     } catch (PDOException $e) {
+    //         return [];
+    //     }
+    // }
+
     public function obtenerTodosLosUsuarios()
     {
-        $pdo = ConexionRRHH::getInstancia()->getConexion();
+        $pdo = ConexionAquarius::getInstancia()->getConexion();
         try {
-            $sql = "SELECT * FROM tabla_aquarius ta
-                    WHERE ta.freg = (
-                        SELECT MAX(freg) FROM tabla_aquarius WHERE dni = ta.dni
-                    )
-                    GROUP BY ta.dni
-                    ORDER BY ta.apellidos, ta.nombres";
+            $sql = "SELECT ma.NUM_DOC_IDENTIDAD AS 'dni',
+                        pp.APE_PATERNO + ' ' + pp.APE_MATERNO AS 'apellidos',
+                        pp.NOM_TRABAJADOR AS 'nombres', 
+                        pc.DES_CARGO AS 'dcargo',  
+                        mcc.COD_C_COSTOS AS 'ccostos',
+                        mcc.DES_C_COSTOS AS 'dcostos',
+                        ms.NOM_SUCURSAL AS 'sede'
+                    FROM PLA_PERSONAL pp
+                    LEFT JOIN PLA_CARGOS pc ON pc.COD_CARGO = pp.COD_CARGO AND pc.COD_CATEGORIA = pp.COD_CATEGORIA
+                    LEFT JOIN MAE_C_COSTOS mcc ON mcc.COD_C_COSTOS = pp.COD_C_COSTOS
+                    LEFT JOIN MAE_AUXILIAR ma ON ma.COD_AUXILIAR = pp.COD_AUXILIAR
+                    LEFT JOIN MAE_SUCURSAL ms ON ms.COD_SUCURSAL = pp.COD_SUCURSAL
+                    WHERE pp.TIP_ESTADO = 'AC'
+                    ORDER BY pp.FEC_INGRESO DESC, pp.APE_PATERNO ASC, pp.APE_MATERNO ASC";
             $statement = $pdo->prepare($sql);
             $statement->execute();
             $usuarios = $statement->fetchAll(PDO::FETCH_ASSOC);
