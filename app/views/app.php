@@ -18,7 +18,7 @@
     <title>SEPCON</title>
 </head>
 
-<body class="<?= $vista === 'tomar_curso' ? 'bg-white' : 'bg-gray-50' ?>">
+<body class="<?= $vista === 'tomar_curso' ? 'bg-white' : 'bg-gray-100' ?>">
     <div x-data="appComponente()" @abrir-modal.window="abrirModalConDatos($event.detail)" @cerrar-modal.window="cerrarModalDialogo()" @obtener-usuario-logueado.window="obtenerUsuarioLogueado($event.detail)">
 
         <div x-show="modalDialogo.activo" x-cloak class="fixed inset-0 flex items-center justify-center z-1000">

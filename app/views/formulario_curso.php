@@ -48,7 +48,7 @@
                             class="text-red-600 font-bold">*</span></label>
                     <textarea x-model="evaluacionSeleccionada.descripcion"
                         class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
-                        rows="3" placeholder="Descripción de la evaluación"></textarea>
+                        rows="5" placeholder="Descripción de la evaluación"></textarea>
                 </div>
                 <button type="button" @click="agregarPregunta()"
                     class="px-3 py-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition mb-4">
@@ -246,7 +246,7 @@
             </div>
         </div>
         <div x-show="!cargando" x-cloak>
-            <div class="flex justify-between mb-4 border-b-4 border-blue-900 pb-2">
+            <div class="flex justify-between pb-2">
                 <ul class="flex gap-2">
                     <li @click="activarVista('descripcionGeneral')" :class="{
                         'cursor-pointer px-4 py-2 rounded-t-lg font-semibold transition': true,
@@ -300,8 +300,8 @@
                         <div>
                             <label class="block font-semibold mb-1">Descripción del curso <span
                                     class="text-red-600 font-bold">*</span></label>
-                            <textarea x-model="curso.descripcion"
-                                class="border rounded-md w-full p-2 min-h-[80px] focus:ring-2 focus:ring-blue-900 focus:border-none outline-none"
+                            <textarea x-model="curso.descripcion" rows="6"
+                                class="border rounded-md w-full p-2 focus:ring-2 focus:ring-blue-900 focus:border-none outline-none"
                                 placeholder="Descripción del curso"></textarea>
                         </div>
 
@@ -470,17 +470,6 @@
                 </ul>
             </div>
             <div x-show="vistaActiva === 'personasInscritas'" x-cloak>
-                <button @click="ocultarMostrarBuscadorDePersonas()"
-                    class="flex items-center gap-2 px-4 py-2 mb-4 rounded-lg shadow border border-blue-900 bg-white text-blue-900 hover:bg-blue-900 hover:text-white transition-all duration-300"
-                    :aria-expanded="!buscadorDePersonasOculto">
-                    <template x-if="buscadorDePersonasOculto">
-                        <i class="fas fa-eye-slash"></i>
-                    </template>
-                    <template x-if="!buscadorDePersonasOculto">
-                        <i class="fas fa-eye"></i>
-                    </template>
-                    <span x-text="buscadorDePersonasOculto ? 'Ocultar Buscador' : 'Mostrar Buscador'"></span>
-                </button>
                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <div x-show="buscadorDePersonasOculto" x-transition:enter="transition ease-out duration-400"
                         x-transition:enter-start="opacity-0 -translate-x-10"
@@ -494,8 +483,8 @@
                                 class="border w-full rounded-md p-2 outline-none my-2"
                                 placeholder="Buscar por nombre, dni o cargo">
 
-                            <div class="flex gap-4 mb-4">
-                                <span>Filtrado por:</span>
+                            <div class="flex items-center gap-4 mb-4">
+                                <span class="font-medium">Filtrado por:</span>
                                 <div class="flex gap-2">
                                     <button @click="seleccionarVistaParticipantes('todos')" :class="{
                                     'rounded-lg px-4 py-2 cursor-pointer': true,
@@ -565,7 +554,8 @@
                                             <h3 class="font-semibold text-sm text-gray-800"
                                                 x-text="usuario.apellidos + ' ' + usuario.nombres"></h3>
                                             <p class="text-sm text-gray-500"
-                                                x-text="'DNI: ' + usuario.dni + ' • Cargo: ' + usuario.dcargo"></p>
+                                                x-text="'DNI: ' + usuario.dni + ' - CARGO: ' + usuario.dcargo"></p>
+                                            <!-- <p class="text-sm text-gray-500" x-text="'PROYECTO: ' + usuario.dcostos"></p> -->
                                         </div>
                                         <button @click="inscribirUsuario(usuario)"
                                             class="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
@@ -587,6 +577,17 @@
                         </div>
                     </div>
                     <div :class="{'md:col-span-2': !buscadorDePersonasOculto}">
+                        <button @click="ocultarMostrarBuscadorDePersonas()"
+                            class="hidden flex items-center gap-2 px-4 py-2 mb-4 rounded-lg shadow border border-blue-900 bg-white text-blue-900 hover:bg-blue-900 hover:text-white transition-all duration-300"
+                            :aria-expanded="!buscadorDePersonasOculto">
+                            <template x-if="buscadorDePersonasOculto">
+                                <i class="fas fa-eye-slash"></i>
+                            </template>
+                            <template x-if="!buscadorDePersonasOculto">
+                                <i class="fas fa-eye"></i>
+                            </template>
+                            <span x-text="buscadorDePersonasOculto ? 'Ocultar Buscador' : 'Mostrar Buscador'"></span>
+                        </button>
                         <div class="mb-4">
                             <div class="grid grid-cols-3 gap-4 items-center text-center">
                                 <div class="bg-white rounded-lg shadow p-6 ">
