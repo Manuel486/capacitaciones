@@ -10,7 +10,7 @@
             <form class="space-y-4" @submit.prevent>
                 <div>
                     <textarea x-model="comentario"
-                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-900"
                         rows="3" placeholder="Comentario"></textarea>
                 </div>
                 <div class="flex justify-end space-x-2 pt-2">
@@ -45,7 +45,7 @@
             </div>
             <div x-show="curso.progreso == 100 && curso.tiene_certificacion == 1" x-cloak>
                 <a :href="'api/obtener_certificado?id_curso=' + obtenerId()" target="_blank"
-                    class="flex items-center gap-2 p-1 border-2 border-blue-600 text-black font-medium px-4 rounded shadow-sm transition bg-white hover:border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    class="flex items-center gap-2 p-1 border-2 border-blue-600 text-black font-medium px-4 rounded shadow-sm transition bg-white hover:border-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-400">
                     <i class="fas fa-award text-blue-500 text-lg"></i>
                     Obtener Certificado
                 </a>
@@ -68,9 +68,10 @@
     </div>
 
     <div class="max-w-screen-3xl mx-auto">
-        <div class="grid grid-cols-1 lg:grid-cols-7">
+        <div class="grid grid-cols-1" :class="{'lg:grid-cols-7': !modo_evaluacion, 'lg:grid-cols-1': modo_evaluacion}">
 
-            <section class="order-1 col-span-5 lg:order-3">
+            <section class="order-1" :class="{'col-span-5': !modo_evaluacion, 'col-span-1': modo_evaluacion, 'lg:order-3': !modo_evaluacion}">
+
                 <template x-if="cargando">
                     <div class="flex items-center justify-center min-h-[400px] bg-gray-100">
                         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900"></div>
@@ -122,44 +123,167 @@
                                     </div>
                                 </div>
                                 <div x-show="modo_evaluacion" :key="'eval-' + item_actual.id_item"
-                                    class="bg-gray-100 w-full h-full p-5 flex items-start justify-center min-h-[800px]">
-                                    <form class="bg-white shadow-md rounded-lg p-6 w-full max-w-lg"
-                                        @submit.prevent="enviarEvaluacion">
-                                        <template x-for="(pregunta, index) in item_actual.detalle.preguntas"
-                                            :key="pregunta.id_pregunta">
-                                            <div class="mb-6">
-                                                <h6 class="text-gray-800 font-semibold mb-2">
-                                                    <span class="font-bold"
-                                                        x-text="'Pregunta ' + (index+1) + ': '"></span>
-                                                    <span x-text="pregunta.contenido"></span>
-                                                </h6>
-                                                <div class="space-y-2">
-                                                    <template x-for="alternativa in pregunta.alternativas"
-                                                        :key="alternativa.id_alternativa">
-                                                        <div class="flex items-center">
-                                                            <input type="radio"
-                                                                :name="'pregunta_' + item_actual.id_item + '_' + pregunta.id_pregunta"
-                                                                :value="alternativa.id_alternativa"
-                                                                class="mr-2 text-blue-600 focus:ring-blue-500"
-                                                                :id="'radio-' + item_actual.id_item + '-' + alternativa.id_alternativa"
-                                                                required>
-                                                            <label class="text-gray-700 cursor-pointer"
-                                                                :for="'radio-' + item_actual.id_item + '-' + alternativa.id_alternativa"
-                                                                x-text="alternativa.contenido"></label>
+                                    class="bg-gray-100 w-full h-full min-h-screen">
+                                    <div class="max-w-7xl mx-auto px-4 py-8">
+                                        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                                            <div class="lg:col-span-1">
+                                                <div class="bg-white rounded-xl shadow-lg p-6 sticky top-4">
+                                                    <div x-show="temporizador_activo" class="mb-6">
+                                                        <div class="flex items-center justify-between mb-2">
+                                                            <span class="text-sm font-medium text-gray-600">Tiempo restante</span>
+                                                            <i class="fas fa-clock text-blue-600"></i>
                                                         </div>
-                                                    </template>
+                                                        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg p-4 text-center">
+                                                            <span class="text-3xl font-bold text-white"
+                                                                x-text="formatearTiempo(tiempo_restante)"></span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="mb-6">
+                                                        <div class="flex items-center justify-between mb-2">
+                                                            <span class="text-sm font-medium text-gray-600">Progreso</span>
+                                                            <span class="text-sm font-bold text-blue-600"
+                                                                x-text="Object.keys(respuestas_evaluacion).length + '/' + item_actual.detalle.preguntas.length"></span>
+                                                        </div>
+                                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                                            <div class="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-300"
+                                                                :style="'width: ' + ((Object.keys(respuestas_evaluacion).length / item_actual.detalle.preguntas.length) * 100) + '%'"></div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                                            <i class="fas fa-list-ol text-blue-900"></i>
+                                                            Preguntas
+                                                        </h3>
+                                                        <div class="space-y-2 max-h-96 overflow-y-auto">
+                                                            <template x-for="(pregunta, index) in item_actual.detalle.preguntas"
+                                                                :key="pregunta.id_pregunta">
+                                                                <button type="button"
+                                                                    @click="irAPregunta(index)"
+                                                                    :class="[
+                                                                        'w-full p-3 rounded-lg text-left transition-all duration-200 flex items-center gap-3 group',
+                                                                        pregunta_actual === index 
+                                                                            ? 'bg-gradient-to-r bg-blue-900 text-white shadow-md' 
+                                                                            : obtenerRespuesta(pregunta.id_pregunta) 
+                                                                                ? 'bg-green-50 border-2 border-green-300 text-gray-800 hover:bg-green-100' 
+                                                                                : 'bg-gray-50 border-2 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                                                    ]">
+                                                                    <div :class="[
+                                                                        'w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0',
+                                                                        pregunta_actual === index 
+                                                                            ? 'bg-white text-blue-600' 
+                                                                            : obtenerRespuesta(pregunta.id_pregunta)
+                                                                                ? 'bg-green-500 text-white'
+                                                                                : 'bg-gray-200 text-gray-600 group-hover:bg-gray-300'
+                                                                    ]">
+                                                                        <template x-if="obtenerRespuesta(pregunta.id_pregunta) && pregunta_actual !== index">
+                                                                            <i class="fas fa-check text-xs"></i>
+                                                                        </template>
+                                                                        <template x-if="!obtenerRespuesta(pregunta.id_pregunta) || pregunta_actual === index">
+                                                                            <span x-text="index + 1"></span>
+                                                                        </template>
+                                                                    </div>
+                                                                    <span class="text-sm font-medium truncate flex-1">
+                                                                        Pregunta <span x-text="index + 1"></span>
+                                                                    </span>
+                                                                </button>
+                                                            </template>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </template>
-                                        <div class="flex justify-end">
-                                            <button type="submit"
-                                                class="group px-5 py-2 bg-blue-900 text-white border hover:text-blue-900 hover:bg-white hover:border-blue-900 rounded-lg font-semibold transition flex items-center gap-2">
-                                                <i
-                                                    class="group-hover:text-blue-900 fas fa-paper-plane text-white text-lg"></i>
-                                                Enviar Respuesta
-                                            </button>
+
+                                            <div class="lg:col-span-3">
+                                                <form @submit.prevent="enviarEvaluacion">
+                                                    <template x-for="(pregunta, index) in item_actual.detalle.preguntas"
+                                                        :key="pregunta.id_pregunta">
+                                                        <div x-show="pregunta_actual === index"
+                                                            class="bg-white rounded-xl shadow-lg p-8 mb-6">
+                                                            <div class="mb-6">
+                                                                <div class="flex items-center gap-3 mb-4">
+                                                                    <div class="bg-gradient-to-r bg-blue-900 text-white rounded-full w-12 h-12 flex items-center justify-center font-bold text-lg shadow-md">
+                                                                        <span x-text="index + 1"></span>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span class="text-sm text-gray-500 font-medium">Pregunta <span x-text="index + 1"></span> de <span x-text="item_actual.detalle.preguntas.length"></span></span>
+                                                                    </div>
+                                                                </div>
+                                                                <h3 class="leading-relaxed"
+                                                                    x-html="pregunta.contenido"></h3>
+                                                            </div>
+
+                                                            <div class="space-y-3">
+                                                                <template x-for="(alternativa, altIndex) in pregunta.alternativas"
+                                                                    :key="alternativa.id_alternativa">
+                                                                    <div @click="guardarRespuesta(pregunta.id_pregunta, alternativa.id_alternativa)"
+                                                                        :class="[
+                                                                            'group cursor-pointer rounded-xl p-5 border-2 transition-all duration-200',
+                                                                            obtenerRespuesta(pregunta.id_pregunta) == alternativa.id_alternativa
+                                                                                ? 'border-blue-900 bg-blue-50 shadow-md'
+                                                                                : 'border-gray-200 hover:border-blue-900 hover:bg-blue-50/30'
+                                                                        ]">
+                                                                        <label class="flex items-start gap-4 cursor-pointer">
+                                                                            <div class="flex items-center justify-center w-6 h-6 flex-shrink-0 mt-1">
+                                                                                <input type="radio"
+                                                                                    :name="'pregunta_' + pregunta.id_pregunta"
+                                                                                    :value="alternativa.id_alternativa"
+                                                                                    :checked="obtenerRespuesta(pregunta.id_pregunta) == alternativa.id_alternativa"
+                                                                                    @change="guardarRespuesta(pregunta.id_pregunta, alternativa.id_alternativa)"
+                                                                                    class="w-5 h-5 text-blue-900 focus:ring-blue-900 cursor-pointer">
+                                                                            </div>
+                                                                            <div class="flex-1">
+                                                                                <div class="flex items-center gap-3">
+                                                                                    <span :class="[
+                                                                                        'inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold',
+                                                                                        obtenerRespuesta(pregunta.id_pregunta) == alternativa.id_alternativa
+                                                                                            ? 'bg-blue-900 text-white'
+                                                                                            : 'bg-gray-200 text-gray-600 group-hover:bg-blue-100'
+                                                                                    ]" x-text="String.fromCharCode(65 + altIndex)"></span>
+                                                                                    <p :class="[
+                                                                                        'text-lg font-medium',
+                                                                                        obtenerRespuesta(pregunta.id_pregunta) == alternativa.id_alternativa
+                                                                                            ? 'text-blue-900'
+                                                                                            : 'text-gray-700'
+                                                                                    ]" x-text="alternativa.contenido"></p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </label>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+
+                                                            <div class="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
+                                                                <button type="button"
+                                                                    @click="anteriorPregunta()"
+                                                                    x-show="pregunta_actual > 0"
+                                                                    class="flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-all duration-200">
+                                                                    <i class="fas fa-arrow-left"></i>
+                                                                    Anterior
+                                                                </button>
+                                                                <div x-show="pregunta_actual === 0"></div>
+                                                                
+                                                                <button type="button"
+                                                                    @click="siguientePregunta()"
+                                                                    x-show="pregunta_actual < item_actual.detalle.preguntas.length - 1"
+                                                                    class="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-900 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-md transition-all duration-200">
+                                                                    Siguiente
+                                                                    <i class="fas fa-arrow-right"></i>
+                                                                </button>
+                                                                
+                                                                <button type="submit"
+                                                                    x-show="pregunta_actual === item_actual.detalle.preguntas.length - 1"
+                                                                    class="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-green-800 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-lg shadow-md transition-all duration-200">
+                                                                    <i class="fas fa-paper-plane"></i>
+                                                                    Enviar Evaluación
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                </form>
+                                            </div>
                                         </div>
-                                    </form>
+                                    </div>
                                 </div>
                             </div>
                         </template>
@@ -246,7 +370,7 @@
                 </template>
             </section>
 
-            <aside
+            <aside x-show="!modo_evaluacion"
                 class="col-span-2 bg-white border-t lg:border-t-0  border-gray-300 overflow-hidden flex flex-col order-2 lg:order-2 max-h-[500px] lg:max-h-screen">
                 <div class="p-4 border-b border-gray-200">
                     <h3 class="font-semibold text-gray-900 text-sm md:text-base">Contenido del curso</h3>

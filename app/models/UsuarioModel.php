@@ -179,7 +179,8 @@ class UsuarioModel
 
     public function obtenerTodosLosUsuarios()
     {
-        $pdo = ConexionAquarius::getInstancia()->getConexion();
+        $pdoAquarius = ConexionAquarius::getInstancia()->getConexion();
+        $pdoDocumentos = ConexionDocumentos::getInstancia()->getConexion();
         try {
             $sql = "SELECT ma.NUM_DOC_IDENTIDAD AS 'dni',
                         pp.APE_PATERNO + ' ' + pp.APE_MATERNO AS 'apellidos',
@@ -187,7 +188,8 @@ class UsuarioModel
                         pc.DES_CARGO AS 'dcargo',  
                         mcc.COD_C_COSTOS AS 'ccostos',
                         mcc.DES_C_COSTOS AS 'dcostos',
-                        ms.NOM_SUCURSAL AS 'sede'
+                        ms.NOM_SUCURSAL AS 'sede',
+                        pp.FEC_INGRESO AS 'fec_ingreso'
                     FROM PLA_PERSONAL pp
                     LEFT JOIN PLA_CARGOS pc ON pc.COD_CARGO = pp.COD_CARGO AND pc.COD_CATEGORIA = pp.COD_CATEGORIA
                     LEFT JOIN MAE_C_COSTOS mcc ON mcc.COD_C_COSTOS = pp.COD_C_COSTOS
@@ -195,9 +197,42 @@ class UsuarioModel
                     LEFT JOIN MAE_SUCURSAL ms ON ms.COD_SUCURSAL = pp.COD_SUCURSAL
                     WHERE pp.TIP_ESTADO = 'AC'
                     ORDER BY pp.FEC_INGRESO DESC, pp.APE_PATERNO ASC, pp.APE_MATERNO ASC";
-            $statement = $pdo->prepare($sql);
+            $statement = $pdoAquarius->prepare($sql);
             $statement->execute();
             $usuarios = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+            $sqlDocumentos = "SELECT i.dni_ce AS 'dni',
+                                    CONCAT(i.apellido_paterno, ' ', i.apellido_materno) AS 'apellidos',
+                                    i.nombres AS 'nombres',
+                                    i.cargo AS 'dcargo',
+                                    i.cod_ccosto AS 'ccostos',
+                                    i.descp_ccosto AS 'dcostos',
+                                    i.sede AS 'sede',
+                                    i.fecha_ingreso AS 'fec_ingreso'
+                              FROM ingreso i
+                              WHERE i.generado_por_aquarius = 0";
+            $statementDocumentos = $pdoDocumentos->prepare($sqlDocumentos);
+            $statementDocumentos->execute();
+            $usuariosDocumentos = $statementDocumentos->fetchAll(PDO::FETCH_ASSOC);
+            // $usuariosDocumentos = [];
+
+            foreach ($usuariosDocumentos as $usuarioDoc) {
+                $existe = false;
+                foreach ($usuarios as $index => $usuario) {
+                    if ($usuario['dni'] === $usuarioDoc['dni']) {
+                        if (!empty($usuario['fec_ingreso']) && !empty($usuarioDoc['fec_ingreso'])) {
+                            if ($usuarioDoc['fec_ingreso'] > $usuario['fec_ingreso']) {
+                                $usuarios[$index] = $usuarioDoc;
+                            }
+                        }
+                        $existe = true;
+                        break;
+                    }
+                }
+                if (!$existe) {
+                    $usuarios[] = $usuarioDoc;
+                }
+            }
             return $usuarios;
         } catch (PDOException $e) {
             return [];

@@ -13,6 +13,11 @@ function tomarCurso() {
     comentarios: [],
     modalComentario: false,
     comentario: "",
+    pregunta_actual: 0,
+    respuestas_evaluacion: {},
+    tiempo_restante: 0,
+    temporizador_activo: false,
+    temporizador_interval: null,
     async obtenerEstructuraCurso() {
       try {
         const respuesta = await fetch(
@@ -41,21 +46,80 @@ function tomarCurso() {
     },
     activarModoEvaluacion() {
       this.modo_evaluacion = true;
+      this.pregunta_actual = 0;
+      this.respuestas_evaluacion = {};
+      
+      // Iniciar temporizador si la evaluación tiene tiempo límite
+      if (this.item_actual.detalle.tiempo_limite && this.item_actual.detalle.tiempo_limite > 0) {
+        this.tiempo_restante = this.item_actual.detalle.tiempo_limite * 60; // Convertir minutos a segundos
+        this.temporizador_activo = true;
+        this.iniciarTemporizador();
+      } else {
+        this.temporizador_activo = false;
+      }
     },
-    enviarEvaluacion(event) {
-      const formData = new FormData(event.target);
+    iniciarTemporizador() {
+      if (this.temporizador_interval) {
+        clearInterval(this.temporizador_interval);
+      }
+      
+      this.temporizador_interval = setInterval(() => {
+        if (this.tiempo_restante > 0) {
+          this.tiempo_restante--;
+        } else {
+          this.detenerTemporizador();
+          this.$dispatch("abrir-modal", {
+            titulo: "Tiempo agotado",
+            mensaje: "El tiempo para completar la evaluación ha terminado. Se enviarán tus respuestas actuales.",
+            tipo: "advertencia",
+          });
+          // Auto-enviar el formulario
+          this.enviarEvaluacionActual();
+        }
+      }, 1000);
+    },
+    detenerTemporizador() {
+      if (this.temporizador_interval) {
+        clearInterval(this.temporizador_interval);
+        this.temporizador_interval = null;
+      }
+      this.temporizador_activo = false;
+    },
+    formatearTiempo(segundos) {
+      const mins = Math.floor(segundos / 60);
+      const secs = segundos % 60;
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    },
+    irAPregunta(index) {
+      this.pregunta_actual = index;
+    },
+    siguientePregunta() {
+      if (this.pregunta_actual < this.item_actual.detalle.preguntas.length - 1) {
+        this.pregunta_actual++;
+      }
+    },
+    anteriorPregunta() {
+      if (this.pregunta_actual > 0) {
+        this.pregunta_actual--;
+      }
+    },
+    guardarRespuesta(idPregunta, idAlternativa) {
+      this.respuestas_evaluacion[idPregunta] = idAlternativa;
+    },
+    obtenerRespuesta(idPregunta) {
+      return this.respuestas_evaluacion[idPregunta] || null;
+    },
+    enviarEvaluacionActual() {
+      this.detenerTemporizador();
+      
       let correctas = 0;
       let totalPreguntas = this.item_actual.detalle.preguntas.length;
-      let preguntasRespondidas = 0;
+      let preguntasRespondidas = Object.keys(this.respuestas_evaluacion).length;
 
       this.item_actual.detalle.preguntas.forEach((pregunta) => {
-        const nameInput =
-          "pregunta_" + this.item_actual.id_item + "_" + pregunta.id_pregunta;
-        const respuestaSeleccionada = formData.get(nameInput);
+        const respuestaSeleccionada = this.respuestas_evaluacion[pregunta.id_pregunta];
 
         if (respuestaSeleccionada) {
-          preguntasRespondidas++;
-
           const alternativaCorrecta = pregunta.alternativas.find(
             (alt) => alt.es_respuesta == 1
           );
@@ -88,6 +152,7 @@ function tomarCurso() {
         });
         this.marcarCompletado(this.item_actual.id_item);
         this.modo_evaluacion = false;
+        this.respuestas_evaluacion = {};
       } else {
         this.$dispatch("abrir-modal", {
           titulo: "Evaluación no aprobada",
@@ -97,10 +162,12 @@ function tomarCurso() {
           tipo: "advertencia",
         });
         this.modo_evaluacion = false;
+        this.respuestas_evaluacion = {};
       }
-
-      // Limpiar el formulario
-      event.target.reset();
+    },
+    enviarEvaluacion(event) {
+      event.preventDefault();
+      this.enviarEvaluacionActual();
     },
     seleccionarItem(temaIndex, itemIndex) {
       if (this.modo_evaluacion) {

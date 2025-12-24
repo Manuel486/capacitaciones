@@ -99,7 +99,9 @@ function nuevoCursoComponente() {
 
           const proyectos = [
             ...new Set(
-              data.respuesta.map((usuario) => usuario.ccostos + ' ' + usuario.dcostos).filter((p) => p)
+              data.respuesta
+                .map((usuario) => usuario.ccostos + " " + usuario.dcostos)
+                .filter((p) => p)
             ),
           ].sort();
           const cargos = [
@@ -290,7 +292,9 @@ function nuevoCursoComponente() {
         const data = await respuesta.json();
 
         if (data.exitoso) {
-          if(!this.modoEdicion) window.location.href = "formulario_curso?id_curso=" + data.respuesta;
+          if (!this.modoEdicion)
+            window.location.href =
+              "formulario_curso?id_curso=" + data.respuesta;
         } else {
           console.error("Error al guardar el curso:", data.mensaje);
         }
@@ -373,7 +377,7 @@ function nuevoCursoComponente() {
         this.usuariosDisponibles = [...this.usuariosOriginalesDisponibles];
       } else {
         this.usuariosDisponibles = this.usuariosOriginalesDisponibles.filter(
-          (usuario) => usuario.ccostos + ' ' + usuario.dcostos === proyecto
+          (usuario) => usuario.ccostos + " " + usuario.dcostos === proyecto
         );
       }
 
@@ -446,7 +450,7 @@ function nuevoCursoComponente() {
 
             this.usuariosInscritosOriginal = [...this.usuariosInscritos];
             this.totalInscritos = this.usuariosInscritos.length;
-            this.totalTerminados = this.usuariosInscritos.filter(u => {
+            this.totalTerminados = this.usuariosInscritos.filter((u) => {
               const progreso = this.obtenerProgresodelUsuario(u.dni);
               return progreso == 100;
             }).length;
@@ -465,10 +469,12 @@ function nuevoCursoComponente() {
         }
       } catch (error) {
         console.error("Error al obtener el curso para edición:", error);
-      } 
+      }
     },
     obtenerProgresodelUsuario(dni) {
-      const progresoObj = this.progresoUsuarios.find((p => p.id_usuario === dni));
+      const progresoObj = this.progresoUsuarios.find(
+        (p) => p.id_usuario === dni
+      );
       return progresoObj ? progresoObj.progreso : 0;
     },
     async cambiarEstadoCurso() {
@@ -602,6 +608,41 @@ function nuevoCursoComponente() {
       const nuevoOrden = tema.items.length + 1;
       this.claseSeleccionada.orden = nuevoOrden;
     },
+    inicializarEditoresQuill() {
+      this.$nextTick(() => {
+        this.evaluacionSeleccionada.preguntas.forEach((pregunta, index) => {
+          const editorId = `editor-pregunta-${index}`;
+          const editorElement = document.getElementById(editorId);
+
+          if (
+            editorElement &&
+            !editorElement.classList.contains("ql-container")
+          ) {
+            const quill = new Quill(editorElement, {
+              theme: "snow",
+              placeholder: "Escribe el texto de la pregunta aquí...",
+              modules: {
+                toolbar: [
+                  ["bold", "italic", "underline"],
+                  ["image"],
+                  [{ list: "ordered" }, { list: "bullet" }],
+                  ["clean"],
+                ],
+              },
+            });
+
+            if (pregunta.contenido) {
+              quill.root.innerHTML = pregunta.contenido;
+            }
+
+            quill.on("text-change", () => {
+              this.evaluacionSeleccionada.preguntas[index].contenido =
+                quill.root.innerHTML;
+            });
+          }
+        });
+      });
+    },
     editarItem(tema, item) {
       if (item.tipo === "clase") {
         this.claseSeleccionada = {
@@ -642,6 +683,8 @@ function nuevoCursoComponente() {
         };
         this.modalEvaluacion = true;
         tema.dropDownActivo = false;
+
+        this.inicializarEditoresQuill();
       }
     },
     agregarAnuncioATema(tema) {
@@ -875,6 +918,36 @@ function nuevoCursoComponente() {
         id_evaluacion: null,
         contenido: "",
         alternativas: [],
+      });
+
+      // Agregar quill automáticamente a la nueva pregunta
+      this.$nextTick(() => {
+        const indexNuevaPregunta =
+          this.evaluacionSeleccionada.preguntas.length - 1;
+        const editorId = `editor-pregunta-${indexNuevaPregunta}`;
+        const editorElement = document.getElementById(editorId);
+        if (editorElement) {
+          const quill = new Quill(editorElement, {
+            theme: "snow",
+            placeholder: "Escribe el texto de la pregunta aquí...",
+            modules: {
+              toolbar: [
+                [{ header: [1, 2, false] }],
+                ["bold", "italic", "underline"],
+                ["image"],
+                [{ list: "ordered" }, { list: "bullet" }],
+                ["clean"],
+              ],
+            },
+          });
+
+          // Sincronizar contenido con el modelo cuando cambie
+          quill.on("text-change", () => {
+            this.evaluacionSeleccionada.preguntas[
+              indexNuevaPregunta
+            ].contenido = quill.root.innerHTML;
+          });
+        }
       });
     },
     eliminarPregunta(indexPregunta) {

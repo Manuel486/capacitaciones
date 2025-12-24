@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="public/fontawesome/css/all.min.css"/>
     <script src="public/js/sortable.min.js"></script>
     <link rel="icon" href="public/assets/favicon.ico" type="image/x-icon">
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
     <style>
         [x-cloak] {
             display: none !important;
@@ -210,6 +211,7 @@
 
     </div>
 
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
     <script src="public/js/app.js?v=<?= APP_VERSION ?>"></script>
 </body>
 

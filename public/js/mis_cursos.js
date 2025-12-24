@@ -12,7 +12,6 @@ function misCursosComponente() {
         progresoGeneral: 0,
         async obtenerCursos() {
             let formData = new FormData();
-            formData.append('id_usuario', 'USR002');
             const respuesta = await fetch('api/mis_cursos',{
                 method: 'POST',
                 body: formData

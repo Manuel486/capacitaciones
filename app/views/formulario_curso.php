@@ -64,10 +64,13 @@
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
-                            <input type="text" x-model="pregunta.contenido"
+                            <div :id="'editor-pregunta-' + index" x-model="pregunta.contenido"
+                                class="text-xl w-full border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-400 mb-2"
+                                ></div>
+                            <!-- <input type="text" x-model="pregunta.contenido"
                                 class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400 mb-2"
-                                placeholder="Texto de la pregunta" />
-                            <div class="space-y-2">
+                                placeholder="Texto de la pregunta" /> -->
+                            <div class="space-y-2 mt-3">
                                 <template x-for="(alternativa, alternativaIndex) in pregunta.alternativas"
                                     :key="alternativaIndex">
                                     <div class="flex items-center space-x-2">
