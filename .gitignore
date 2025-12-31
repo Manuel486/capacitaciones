@@ -1,8 +1,8 @@
 app/videos
 public/assets
 node_modules
-public/js/alpine.min.js
-public/js/sortable.min.js
+# public/js/alpine.min.js
+# public/js/sortable.min.js
 public/fontawesome
 package-lock.json
 package.json

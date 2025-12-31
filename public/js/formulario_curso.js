@@ -10,6 +10,8 @@ function nuevoCursoComponente() {
       duracion: 0,
       acceso_libre: 1,
       tiene_certificacion: 1,
+      fecha_publicacion: null,
+      fecha_cierre: null,
       temas: [],
       activo: 1,
     },
@@ -429,6 +431,8 @@ function nuevoCursoComponente() {
             duracion: data.respuesta.duracion || 0,
             acceso_libre: data.respuesta.acceso_libre,
             tiene_certificacion: data.respuesta.tiene_certificacion,
+            fecha_publicacion: data.respuesta.fecha_publicacion || null,
+            fecha_cierre: data.respuesta.fecha_cierre || null,
             temas: data.respuesta.temas || [],
             activo: data.respuesta.activo || 1,
           };

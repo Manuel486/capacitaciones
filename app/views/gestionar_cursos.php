@@ -96,7 +96,7 @@
                                         <p class="text-gray-600 text-xs truncate mb-4"
                                             x-text="curso.descripcion && curso.descripcion.length > 80 ? curso.descripcion.substring(0, 80) + '...' : curso.descripcion">
                                         </p>
-                                        <div class="flex items-center gap-4 text-md text-gray-500">
+                                        <div class="flex flex-wrap items-center gap-4 text-md text-gray-500">
                                             <div class="flex items-center gap-1">
                                                 <i class="fas fa-users"></i>
                                                 <span x-text="curso.inscritos || 0"></span>
@@ -114,11 +114,23 @@
                                                 <span x-text="curso.duracion ? curso.duracion + 'h' : 'N/A'"></span>
                                             </div>
                                         </div>
+                                        <div class="flex flex-wrap items-center gap-4 text-md text-gray-500 mt-4">
+                                            <div class="flex items-center gap-1">
+                                                <i class="fas fa-calendar-alt"></i>
+                                                <span class="text-sm text-gray-600"
+                                                    x-text="curso.fecha_publicacion ? 'Publicado: ' + new Date(curso.fecha_publicacion).toLocaleString() : 'No publicado'"></span>
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <i class="fas fa-calendar-times"></i>
+                                                <span class="text-sm text-gray-600"
+                                                    x-text="curso.fecha_cierre ? 'Cierra: ' + new Date(curso.fecha_cierre).toLocaleString() : 'Sin cierre'"></span>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div
                                         class="flex flex-row sm:flex-col gap-2 mt-3 sm:mt-0 sm:ml-4 items-end sm:items-end">
                                         <span :class="{
-                                                'px-2 py-0.5 rounded-full text-xs font-semibold mb-2': true,
+                                                'px-2 py-0.5 rounded-full text-xs font-semibold': true,
                                                 'bg-green-500 text-white': curso.activo == 1,
                                                 'bg-gray-500 text-white': curso.activo != 1
                                             }" x-text="curso.activo == 1 ? 'Activo' : 'Inactivo'">

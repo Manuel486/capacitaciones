@@ -126,7 +126,14 @@ class CursoUsuarioModel
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
-            $query = "SELECT c.*
+            $query = "SELECT c.*,
+                      CASE
+                        WHEN c.fecha_publicacion IS NOT NULL
+                        AND c.fecha_cierre IS NOT NULL
+                        AND CURRENT_DATE BETWEEN c.fecha_publicacion AND c.fecha_cierre
+                        THEN 1
+                        ELSE 0
+                      END AS activo
                       FROM curso c
                       WHERE c.id_autor = :id_autor";
             $stmt = $pdo->prepare($query);
@@ -140,7 +147,6 @@ class CursoUsuarioModel
                     $stmtInscritos->execute(['id_curso' => $curso['id_curso']]);
                     $cursos[$index]['inscritos'] = $stmtInscritos->fetchColumn();
 
-                    // Obtener valoracion promedio
                     $queryValoraciones = "SELECT * FROM curso_valoracion WHERE id_curso = :id_curso";
                     $stmtValoraciones = $pdo->prepare($queryValoraciones);
                     $stmtValoraciones->execute(['id_curso' => $cursos[$index]['id_curso']]);
@@ -151,7 +157,6 @@ class CursoUsuarioModel
                             return $sum + $valoracion['valoracion'];
                         }, 0);
                         $cursos[$index]['valoracion_promedio'] = round($sumaValoraciones / count($valoraciones));
-                        // Redondear a un decimal
                     } else {
                         $cursos[$index]['valoracion_promedio'] = 0;
                     }

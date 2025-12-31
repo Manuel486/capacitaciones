@@ -65,8 +65,8 @@
                                 </button>
                             </div>
                             <div :id="'editor-pregunta-' + index" x-model="pregunta.contenido"
-                                class="text-xl w-full border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-400 mb-2"
-                                ></div>
+                                class="text-xl w-full border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-400 mb-2">
+                            </div>
                             <!-- <input type="text" x-model="pregunta.contenido"
                                 class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400 mb-2"
                                 placeholder="Texto de la pregunta" /> -->
@@ -282,7 +282,7 @@
             <div x-show="vistaActiva === 'descripcionGeneral'" x-cloak class="bg-white rounded-lg shadow p-6">
                 <form class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start" @submit.prevent>
                     <div class="md:col-span-2 space-y-6">
-                        <div class="flex justify-end">
+                        <div class="flex justify-end hidden">
                             <button @click="cambiarEstadoCurso()" :class="[
                                 'flex items-center gap-2 rounded transition px-3 py-1',
                                 curso.activo == 1 ? 'text-green-600' : 'text-gray-400'
@@ -345,6 +345,16 @@
                                     <option value="1">Sí</option>
                                     <option value="0">No</option>
                                 </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block font-semibold mb-1">Fecha de publicación</label>
+                                <input type="datetime-local" x-model="curso.fecha_publicacion" class="border rounded-md w-full p-2 focus:ring-2 focus:ring-blue-900 focus:border-none outline-none">
+                            </div>
+                            <div>
+                                <label class="block font-semibold mb-1">Fecha de cierre</label>
+                                <input type="datetime-local" x-model="curso.fecha_cierre" class="border rounded-md w-full p-2 focus:ring-2 focus:ring-blue-900 focus:border-none outline-none">
                             </div>
                         </div>
                     </div>

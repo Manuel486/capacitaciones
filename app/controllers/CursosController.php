@@ -155,7 +155,7 @@ class CursosController
         }
 
         if ($idCurso) {
-            echo ApiRespuesta::exitoso($idCurso, "Curso creado exitosamente");
+            echo ApiRespuesta::exitoso($idCurso, "Curso actualizado exitosamente");
         } else {
             echo ApiRespuesta::error("Error al crear el curso");
         }

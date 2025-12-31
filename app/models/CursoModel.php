@@ -14,7 +14,16 @@ class CursoModel
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
-            $query = "SELECT id_curso, nombre, descripcion, imagen, tiene_certificacion FROM curso WHERE activo = 1 AND acceso_libre = 1";
+            $query = "SELECT id_curso,
+                        nombre,
+                        descripcion,
+                        imagen,
+                        tiene_certificacion
+                    FROM curso
+                    WHERE fecha_publicacion IS NOT NULL
+                    AND fecha_cierre IS NOT NULL
+                    AND fecha_publicacion < fecha_cierre
+                    AND acceso_libre = 1";
             $stmt = $pdo->prepare($query);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -288,7 +297,7 @@ class CursoModel
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
             $idCurso = generarIdUnico("CUR");
-            $query = "INSERT INTO curso (id_curso, nombre, descripcion, dificultad, duracion, id_autor, imagen, activo, acceso_libre, tiene_certificacion) 
+            $query = "INSERT INTO curso (id_curso, nombre, descripcion, dificultad, duracion, id_autor, imagen, activo, acceso_libre, tiene_certificacion, fecha_publicacion, fecha_cierre) 
                       VALUES (:id_curso, :nombre, :descripcion, :dificultad, :duracion, :id_autor, :imagen, :activo, :acceso_libre, :tiene_certificacion)";
             $stmt = $pdo->prepare($query);
             $stmt->execute([
@@ -301,21 +310,25 @@ class CursoModel
                 'imagen' => $datosCurso['imagen'],
                 'activo' => 1,
                 'acceso_libre' => $datosCurso['acceso_libre'],
-                'tiene_certificacion' => $datosCurso['tiene_certificacion']
+                'tiene_certificacion' => $datosCurso['tiene_certificacion'],
+                'fecha_publicacion' => $datosCurso['fecha_publicacion'],
+                'fecha_cierre' => $datosCurso['fecha_cierre']
             ]);
 
             if (!empty($idsUsuarios) && is_array($idsUsuarios)) {
-                $insertInscripcionQuery = "INSERT INTO curso_usuario (id_curso_usuario, id_curso, id_usuario, fecha_inicio, progreso, obligatorio) 
-                                           VALUES (:id_curso_usuario, :id_curso, :id_usuario, NOW(), 0, 1)";
-                $stmtInscripcion = $pdo->prepare($insertInscripcionQuery);
-
+                $values = [];
+                $params = [];
                 foreach ($idsUsuarios as $idUsuario) {
                     $idCursoUsuario = generarIdUnico("CUU");
-                    $stmtInscripcion->execute([
-                        'id_curso_usuario' => $idCursoUsuario,
-                        'id_curso' => $idCurso,
-                        'id_usuario' => $idUsuario
-                    ]);
+                    $values[] = "(?, ?, ?, NOW(), 0, 1)";
+                    $params[] = $idCursoUsuario;
+                    $params[] = $idCurso;
+                    $params[] = $idUsuario;
+                }
+                if (!empty($values)) {
+                    $insertInscripcionQuery = "INSERT INTO curso_usuario (id_curso_usuario, id_curso, id_usuario, fecha_inicio, progreso, obligatorio) VALUES " . implode(", ", $values);
+                    $stmtInscripcion = $pdo->prepare($insertInscripcionQuery);
+                    $stmtInscripcion->execute($params);
                 }
             }
 
@@ -329,7 +342,10 @@ class CursoModel
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
-            $query = "UPDATE curso SET nombre = :nombre, descripcion = :descripcion, dificultad = :dificultad, duracion = :duracion, imagen = :imagen, acceso_libre = :acceso_libre, tiene_certificacion= :tiene_certificacion WHERE id_curso = :id_curso";
+            $query = "UPDATE curso SET nombre = :nombre, descripcion = :descripcion, dificultad = :dificultad, duracion = :duracion, 
+                      imagen = :imagen, acceso_libre = :acceso_libre, tiene_certificacion= :tiene_certificacion, 
+                      fecha_publicacion = :fecha_publicacion, fecha_cierre = :fecha_cierre
+                      WHERE id_curso = :id_curso";
             $stmt = $pdo->prepare($query);
             $stmt->execute([
                 'id_curso' => $datosCurso['id_curso'],
@@ -339,7 +355,9 @@ class CursoModel
                 'duracion' => $datosCurso['duracion'],
                 'imagen' => $datosCurso['imagen'],
                 'acceso_libre' => $datosCurso['acceso_libre'],
-                'tiene_certificacion' => $datosCurso['tiene_certificacion']
+                'tiene_certificacion' => $datosCurso['tiene_certificacion'],
+                'fecha_publicacion' => $datosCurso['fecha_publicacion'],
+                'fecha_cierre' => $datosCurso['fecha_cierre']
             ]);
 
             $queryUsuariosActuales = "SELECT id_usuario FROM curso_usuario WHERE id_curso = :id_curso";
@@ -360,15 +378,20 @@ class CursoModel
             }
 
             if (!empty($usuariosAAgregar)) {
-                $insertQuery = "INSERT INTO curso_usuario (id_curso_usuario, id_curso, id_usuario, fecha_inicio, progreso, obligatorio) VALUES (:id_curso_usuario, :id_curso, :id_usuario, NOW(), 0, 1)";
-                $stmtInsert = $pdo->prepare($insertQuery);
-                foreach ($usuariosAAgregar as $idUsuario) {
+                $insertQuery = "INSERT INTO curso_usuario (id_curso_usuario, id_curso, id_usuario, fecha_inicio, progreso, obligatorio) VALUES ";
+                $values = [];
+                $params = [];
+                foreach ($usuariosAAgregar as $idx => $idUsuario) {
                     $idCursoUsuario = generarIdUnico("CUU");
-                    $stmtInsert->execute([
-                        'id_curso_usuario' => $idCursoUsuario,
-                        'id_curso' => $datosCurso['id_curso'],
-                        'id_usuario' => $idUsuario
-                    ]);
+                    $values[] = "(?, ?, ?, NOW(), 0, 1)";
+                    $params[] = $idCursoUsuario;
+                    $params[] = $datosCurso['id_curso'];
+                    $params[] = $idUsuario;
+                }
+                if (!empty($values)) {
+                    $insertQuery .= implode(", ", $values);
+                    $stmtInsert = $pdo->prepare($insertQuery);
+                    $stmtInsert->execute($params);
                 }
             }
 
@@ -382,7 +405,9 @@ class CursoModel
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
-            $query = "SELECT id_curso, nombre, descripcion, dificultad, duracion, imagen, activo, acceso_libre, tiene_certificacion FROM curso WHERE id_curso = :id_curso";
+            $query = "SELECT id_curso, nombre, descripcion, dificultad, duracion, imagen, activo, acceso_libre, 
+                             tiene_certificacion, fecha_publicacion, fecha_cierre 
+                      FROM curso WHERE id_curso = :id_curso";
             $stmt = $pdo->prepare($query);
             $stmt->execute(['id_curso' => $idCurso]);
             $curso = $stmt->fetch(PDO::FETCH_ASSOC);

@@ -4,6 +4,10 @@ function cursosComponente() {
         cargando: true,
         cursosOriginal: [],
         inputCurso: '',
+        filtroCertificacion: {
+            con: false,
+            sin: false
+        },
         async obtenerCursos() {
             const respuesta = await fetch('api/cursos');
             const data = await respuesta.json();
@@ -11,6 +15,18 @@ function cursosComponente() {
                 this.cursos = data.respuesta;
                 this.cursosOriginal = data.respuesta;
                 this.cargando = false;
+            }
+        },
+        filtrarCursosCertificacion() {
+            const { con, sin } = this.filtroCertificacion;
+            if (con && sin) {
+                this.cursos = this.cursosOriginal;
+            } else if (con) {
+                this.cursos = this.cursosOriginal.filter(curso => curso.tiene_certificacion == 1);
+            } else if (sin) {
+                this.cursos = this.cursosOriginal.filter(curso => curso.tiene_certificacion == 0);
+            } else {
+                this.cursos = this.cursosOriginal;
             }
         },
         async buscarCurso() {

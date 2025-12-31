@@ -6,9 +6,33 @@
                 <div class="sticky top-4">
                     <div class="bg-white rounded-lg shadow p-6">
                         <h4 class="text-blue-900 mb-2 font-medium">Buscar curso</h4>
-                        <input x-model="inputCurso" @input.debounce.500ms="buscarCurso()" type="text"
-                            placeholder="Ingrese el nombre del curso"
-                            class="border rounded-md w-full py-1 px-2 text-sm outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition">
+                        <div class="relative">
+                            <input x-model="inputCurso" @input.debounce.500ms="buscarCurso()" type="text"
+                                placeholder="Ingrese el nombre del curso"
+                                class="border rounded-md w-full py-1 px-2 text-md outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent transition pl-8">
+                            <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400">
+                                <i class="fas fa-search"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6 mt-4">
+                        <!-- Filtrar por si tiene certificacion, todos solo certificacion, con certificacion con checbkox -->
+                        <h4 class="text-blue-900 mb-2 font-medium">Filtrar por certificación</h4>
+                        <div class="border rounded-lg p-4">
+                            <div class="flex items-center mb-2">
+                                <input type="checkbox" id="conCertificacion" x-model="filtroCertificacion.con"
+                                    @change="filtrarCursosCertificacion()" class="mr-2">
+                                <label for="conCertificacion" class="text-sm text-gray-700"><i
+                                        class="fas fa-award text-yellow-400"></i> Solo con certificación</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="sinCertificacion" x-model="filtroCertificacion.sin"
+                                    @change="filtrarCursosCertificacion()" class="mr-2">
+                                <label for="sinCertificacion" class="text-sm text-gray-700">
+                                    <i class="fas fa-times-circle text-red-400"></i> Sin certificación
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -45,7 +69,9 @@
                                         <img :src="curso.imagen ? 'public/assets/portadas/' + curso.imagen : 'public/assets/portadas/plantilla.jpg'"
                                             alt="Imagen del curso" class="h-24 object-cover">
                                         <div class="p-2 flex-1 flex flex-col">
-                                            <h3 class="text-xs font-bold text-gray-900 mb-1" x-text="curso.nombre.length > 60 ? curso.nombre.substring(0, 60) + '...' : curso.nombre"></h3>
+                                            <h3 class="text-xs font-bold text-gray-900 mb-1"
+                                                x-text="curso.nombre.length > 60 ? curso.nombre.substring(0, 60) + '...' : curso.nombre">
+                                            </h3>
                                             <p class="text-gray-600 text-xs mb-1 max-h-50 flex-1 line-clamp-2"
                                                 x-text="curso.descripcion.length > 80 ? curso.descripcion.substring(0, 80) + '...' : curso.descripcion">
                                             </p>
