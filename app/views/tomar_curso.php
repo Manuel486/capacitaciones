@@ -69,7 +69,7 @@
                     <template x-if="!cargando">
                         <div class="bg-white rounded-2xl overflow-hidden">
                             <template x-if="item_actual.tipo === 'clase'">
-                                <div class="bg-black rounded-t-2xl overflow-hidden">
+                                <div class="bg-black rounded-t-2xl overflow-hidden border-2 border-blue-900">
                                     <video class="w-full aspect-video" controls controlsList="nodownload"
                                         :src="'api/obtener_video?nombre=' + item_actual.detalle.video">
                                         Tu navegador no soporta el elemento de video.
