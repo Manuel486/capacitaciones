@@ -52,7 +52,7 @@
 
             <div class="lg:col-span-9">
                 <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex justify-between items-center mb-6">
+                    <div class="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
                         <h2 class="text-2xl font-bold text-gray-900">Mis Cursos Creados</h2>
                         <div class="flex gap-2 items-center">
                             <input x-model="inputCurso" @input.debounce.500ms="buscarCurso()" type="text"

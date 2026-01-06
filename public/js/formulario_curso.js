@@ -187,6 +187,40 @@ function nuevoCursoComponente() {
       this.seleccionados.delete(usuario.dni);
     },
 
+    // quitarUsuarioInscrito(usuario) {
+    //   this.usuariosInscritos = this.usuariosInscritosOriginal.filter(
+    //     (u) => u.dni !== usuario.dni
+    //   );
+
+    //   const existeEnDisponibles = this.usuariosDisponibles.some(
+    //     (u) => u.dni === usuario.dni
+    //   );
+    //   const existeEnOriginales = this.usuariosOriginalesDisponibles.some(
+    //     (u) => u.dni === usuario.dni
+    //   );
+
+    //   const usuarioLimpio = { ...usuario, seleccionado: false };
+    //   if (!existeEnDisponibles) {
+    //     this.usuariosDisponibles.push(usuarioLimpio);
+    //   }
+    //   if (!existeEnOriginales) {
+    //     this.usuariosOriginalesDisponibles.push(usuarioLimpio);
+    //   }
+
+    //   this.usuariosInscritosOriginal = [...this.usuariosInscritos];
+    //   this.totalInscritos = this.usuariosInscritos.length;
+    //   // Determinar si el usuario estaba terminado o en proceso
+    //   let progresoUsuario = this.obtenerProgresodelUsuario(usuario.dni);
+    //   // Saber si estaba terminado o en proceso
+    //   if (progresoUsuario == 100) {
+    //     this.totalTerminados--;
+    //   } else {
+    //     this.totalEnProceso--;
+    //   }
+    //   this.totalEnProceso = this.totalInscritos - this.totalTerminados;
+    //   this.personasEncontradas = this.usuariosDisponibles.length;
+
+    // },
     quitarUsuarioInscrito(usuario) {
       this.usuariosInscritos = this.usuariosInscritos.filter(
         (u) => u.dni !== usuario.dni
@@ -209,9 +243,14 @@ function nuevoCursoComponente() {
 
       this.usuariosInscritosOriginal = [...this.usuariosInscritos];
       this.totalInscritos = this.usuariosInscritos.length;
+      let progresoUsuario = this.obtenerProgresodelUsuario(usuario.dni);
+      if (progresoUsuario == 100) {
+        this.totalTerminados--;
+      } else {
+        this.totalEnProceso--;
+      }
       this.personasEncontradas = this.usuariosDisponibles.length;
     },
-
     buscarDisponibles() {
       const termino = this.inputDisponibles.toLowerCase().trim();
 
@@ -237,19 +276,26 @@ function nuevoCursoComponente() {
       const termino = this.inputInscritos.toLowerCase().trim();
 
       if (termino === "") {
-        this.usuariosInscritos = [...this.usuariosInscritosOriginal];
+        this.usuariosInscritos.forEach((usuario) => {
+          const elemento = document.getElementById('usuario-inscrito' + usuario.dni);
+          if (elemento) {
+            elemento.style.display = '';
+          }
+        });
         return;
       }
 
-      this.usuariosInscritos = this.usuariosInscritosOriginal.filter(
-        (usuario) =>
-          (usuario.nombres &&
-            usuario.nombres.toLowerCase().includes(termino)) ||
-          (usuario.apellidos &&
-            usuario.apellidos.toLowerCase().includes(termino)) ||
-          (usuario.dni && usuario.dni.toLowerCase().includes(termino)) ||
-          (usuario.dcargo && usuario.dcargo.toLowerCase().includes(termino))
-      );
+      this.usuariosInscritosOriginal.forEach((usuario) => {
+        const elemento = document.getElementById('usuario-inscrito' + usuario.dni);
+        if (elemento) {
+          const coincide =
+        (usuario.nombres && usuario.nombres.toLowerCase().includes(termino)) ||
+        (usuario.apellidos && usuario.apellidos.toLowerCase().includes(termino)) ||
+        (usuario.dni && usuario.dni.toLowerCase().includes(termino)) ||
+        (usuario.dcargo && usuario.dcargo.toLowerCase().includes(termino));
+          elemento.style.display = coincide ? '' : 'none';
+        }
+      });
     },
 
     async guardarCurso() {

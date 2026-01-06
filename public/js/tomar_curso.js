@@ -49,9 +49,8 @@ function tomarCurso() {
       this.pregunta_actual = 0;
       this.respuestas_evaluacion = {};
       
-      // Iniciar temporizador si la evaluación tiene tiempo límite
       if (this.item_actual.detalle.tiempo_limite && this.item_actual.detalle.tiempo_limite > 0) {
-        this.tiempo_restante = this.item_actual.detalle.tiempo_limite * 60; // Convertir minutos a segundos
+        this.tiempo_restante = this.item_actual.detalle.tiempo_limite * 60;
         this.temporizador_activo = true;
         this.iniciarTemporizador();
       } else {
@@ -73,7 +72,6 @@ function tomarCurso() {
             mensaje: "El tiempo para completar la evaluación ha terminado. Se enviarán tus respuestas actuales.",
             tipo: "advertencia",
           });
-          // Auto-enviar el formulario
           this.enviarEvaluacionActual();
         }
       }, 1000);

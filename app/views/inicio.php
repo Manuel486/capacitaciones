@@ -67,6 +67,5 @@
             </template>
         </div>
     </div>
-
 </div>
 <script src="public/js/inicio.js?v=<?= APP_VERSION ?>"></script>

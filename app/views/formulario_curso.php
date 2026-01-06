@@ -219,13 +219,13 @@
 
     <div class="container mx-auto px-4 py-8">
         <div x-show="cargando" x-cloak>
-            <div class="flex justify-between mb-4 animate-pulse">
-                <ul class="flex gap-4">
-                    <li class="h-6 w-32 bg-gray-300 rounded"></li>
-                    <li class="h-6 w-32 bg-gray-300 rounded"></li>
-                    <li class="h-6 w-24 bg-gray-300 rounded"></li>
+            <div class="flex flex-col sm:flex-row gap-4 justify-between mb-4 animate-pulse">
+                <ul class="flex flex-col sm:flex-row gap-4">
+                    <li class="h-6 w-75 sm:w-32 bg-gray-300 rounded"></li>
+                    <li class="h-6 w-75 sm:w-32 bg-gray-300 rounded"></li>
+                    <li class="h-6 w-75 sm:w-24 bg-gray-300 rounded"></li>
                 </ul>
-                <div class="h-10 w-32 bg-gray-300 rounded"></div>
+                <div class="h-10 w-75 sm:w-32 bg-gray-300 rounded"></div>
             </div>
 
             <div class="bg-white rounded-lg shadow p-6 animate-pulse">
@@ -249,8 +249,8 @@
             </div>
         </div>
         <div x-show="!cargando" x-cloak>
-            <div class="flex justify-between pb-2">
-                <ul class="flex gap-2">
+            <div class="flex flex-col md:flex-row gap-4 justify-between pb-2">
+                <ul class="flex flex-col md:flex-row gap-2">
                     <li @click="activarVista('descripcionGeneral')" :class="{
                         'cursor-pointer px-4 py-2 rounded-t-lg font-semibold transition': true,
                         'bg-blue-900 text-white shadow': vistaActiva === 'descripcionGeneral',
@@ -496,24 +496,24 @@
                                 class="border w-full rounded-md p-2 outline-none my-2"
                                 placeholder="Buscar por nombre, dni o cargo">
 
-                            <div class="flex items-center gap-4 mb-4">
+                            <div class="flex items-center flex-col md:flex-row gap-4 mb-4">
                                 <span class="font-medium">Filtrado por:</span>
-                                <div class="flex gap-2">
+                                <div class="flex gap-2 flex-col md:flex-row w-full">
                                     <button @click="seleccionarVistaParticipantes('todos')" :class="{
-                                    'rounded-lg px-4 py-2 cursor-pointer': true,
-                                    'bg-blue-900 text-white': vistaParticipantes === 'todos',
-                                    'bg-gray-100': vistaParticipantes !== 'todos'
-                                }">Todos</button>
+                                        'rounded-lg px-4 py-2 cursor-pointer w-full': true,
+                                        'bg-blue-900 text-white': vistaParticipantes === 'todos',
+                                        'bg-gray-100': vistaParticipantes !== 'todos'
+                                    }">Todos</button>
                                     <button @click="seleccionarVistaParticipantes('proyecto')" :class="{
-                                    'rounded-lg px-4 py-2 cursor-pointer': true,
-                                    'bg-blue-900 text-white': vistaParticipantes === 'proyecto',
-                                    'bg-gray-100': vistaParticipantes !== 'proyecto'
-                                }">Por Proyecto</button>
+                                        'rounded-lg px-4 py-2 cursor-pointer w-full': true,
+                                        'bg-blue-900 text-white': vistaParticipantes === 'proyecto',
+                                        'bg-gray-100': vistaParticipantes !== 'proyecto'
+                                    }">Por Proyecto</button>
                                     <button @click="seleccionarVistaParticipantes('cargo')" :class="{
-                                    'rounded-lg px-4 py-2 cursor-pointer': true,
-                                    'bg-blue-900 text-white': vistaParticipantes === 'cargo',
-                                    'bg-gray-100': vistaParticipantes !== 'cargo'
-                                }">Por Cargo</button>
+                                        'rounded-lg px-4 py-2 cursor-pointer w-full': true,
+                                        'bg-blue-900 text-white': vistaParticipantes === 'cargo',
+                                        'bg-gray-100': vistaParticipantes !== 'cargo'
+                                    }">Por Cargo</button>
                                 </div>
                             </div>
                             <div x-show="vistaParticipantes === 'proyecto'">
@@ -560,7 +560,7 @@
                             <div class="max-h-96 overflow-y-auto space-y-3">
                                 <template x-for="usuario in usuariosDisponibles" :key="usuario.dni">
                                     <div
-                                        class="border border-gray-200 rounded-lg p-4 flex items-center gap-4 hover:bg-gray-50 hover:cursor-pointer transition">
+                                        class="border border-gray-200 rounded-lg p-4 flex flex-wrap items-center gap-4 hover:bg-gray-50 hover:cursor-pointer transition">
                                         <input @change="seleccionarUsuario(usuario)" type="checkbox"
                                             class="accent-blue-600 h-5 w-5" :checked="usuario.seleccionado">
                                         <div class="flex-1">
@@ -571,7 +571,7 @@
                                             <!-- <p class="text-sm text-gray-500" x-text="'PROYECTO: ' + usuario.dcostos"></p> -->
                                         </div>
                                         <button @click="inscribirUsuario(usuario)"
-                                            class="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                                            class="bg-blue-900  text-white px-4 py-2 rounded border border-blue-900 hover:bg-white hover:text-blue-900 transition">
                                             Inscribir
                                         </button>
                                     </div>
@@ -632,8 +632,8 @@
                                         No hay personas inscritas.
                                     </div>
                                     <div x-show="usuariosInscritos.length > 0">
-                                        <template x-for="usuario in usuariosInscritos" :key="'INSCRITO-' + usuario.dni">
-                                            <div
+                                        <template x-for="usuario in usuariosInscritos" :key="'INSCRITO-' + usuario.dni" >
+                                            <div x-show="!usuario.ocultarInformacion" :id="'usuario-inscrito' + usuario.dni"
                                                 class="border border-gray-200 rounded-lg p-4 mb-3 bg-gray-50 flex items-center justify-between hover:bg-blue-50 transition">
                                                 <div class="flex items-center gap-4 flex-1">
                                                     <div
