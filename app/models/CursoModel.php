@@ -22,7 +22,8 @@ class CursoModel
                     FROM curso
                     WHERE fecha_publicacion IS NOT NULL
                     AND fecha_cierre IS NOT NULL
-                    AND fecha_publicacion < fecha_cierre
+                    AND CURDATE() >= fecha_publicacion
+                    AND CURDATE() <= fecha_cierre
                     AND acceso_libre = 1";
             $stmt = $pdo->prepare($query);
             $stmt->execute();
@@ -36,7 +37,21 @@ class CursoModel
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
-            $query = "SELECT id_curso, nombre, descripcion, imagen, tiene_certificacion FROM curso WHERE activo = 1 AND acceso_libre = 1 LIMIT 5";
+            $query = "SELECT id_curso, nombre, descripcion, imagen, tiene_certificacion 
+                      FROM curso 
+                      WHERE fecha_publicacion IS NOT NULL
+                      AND fecha_cierre IS NOT NULL
+                      AND CURDATE() >= fecha_publicacion
+                      AND CURDATE() <= fecha_cierre
+                      AND activo = 1 AND acceso_libre = 1 
+                      LIMIT 5";
+            // $query = "SELECT id_curso, nombre, descripcion, imagen, tiene_certificacion 
+            //           FROM curso 
+            //           WHERE fecha_publicacion IS NOT NULL
+            //           AND fecha_cierre IS NOT NULL
+            //           AND CURDATE() <= fecha_cierre
+            //           AND activo = 1 AND acceso_libre = 1 
+            //           LIMIT 5";
             $stmt = $pdo->prepare($query);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -298,7 +313,7 @@ class CursoModel
         try {
             $idCurso = generarIdUnico("CUR");
             $query = "INSERT INTO curso (id_curso, nombre, descripcion, dificultad, duracion, id_autor, imagen, activo, acceso_libre, tiene_certificacion, fecha_publicacion, fecha_cierre) 
-                      VALUES (:id_curso, :nombre, :descripcion, :dificultad, :duracion, :id_autor, :imagen, :activo, :acceso_libre, :tiene_certificacion)";
+                      VALUES (:id_curso, :nombre, :descripcion, :dificultad, :duracion, :id_autor, :imagen, :activo, :acceso_libre, :tiene_certificacion, :fecha_publicacion, :fecha_cierre)";
             $stmt = $pdo->prepare($query);
             $stmt->execute([
                 'id_curso' => $idCurso,
