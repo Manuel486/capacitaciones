@@ -68,6 +68,9 @@ route($router, 'GET', '/api/obtener_todos_usuarios', 'UsuariosController', 'apiO
 // =============== VIDEOS CONTROLLER ===============
 route($router, 'GET', '/api/obtener_video', 'VideosController', 'apiObtenerVideoPorNombre');
 
+// =============== ARCHIVOS CONTROLLER ===============
+route($router, 'GET', '/api/obtener_archivo', 'ArchivosController', 'apiObtenerArchivoPorNombre');
+
 // =============== CERTIFICADOS CONTROLLER ===============
 route($router, 'GET', '/api/obtener_certificado', 'CertificadosController', 'apiObtenerCertificadoPorIdCursoIdUsuario');
 

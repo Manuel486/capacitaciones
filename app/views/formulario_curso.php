@@ -134,14 +134,16 @@
                     <label for="videoClase"
                         class="block w-full cursor-pointer border-2 border-dashed border-blue-400 rounded-lg p-6 text-center text-blue-600 font-semibold text-lg hover:bg-blue-50 transition">
                         <i class="fas fa-cloud-upload-alt text-3xl mb-2"></i><br />
-                        Arrastra o suelta el video aquí o haz clic para seleccionar
+                        Arrastra o suelta el archivo aquí o haz clic para seleccionar
                     </label>
-                    <input type="file" id="videoClase" class="hidden" accept="video/*" @change="
+                    <input type="file" id="videoClase" class="hidden" 
+                        accept="video/*,.pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx"
+                        @change="
                         const file = $event.target.files[0];
                         if (file && file.size > 20 * 1024 * 1024) {
                                 $dispatch('abrir-modal', {
                                     titulo: 'Archivo demasiado grande',
-                                    mensaje: 'El tamaño máximo permitido para el video es de 20MB.',
+                                    mensaje: 'El tamaño máximo permitido es de 20MB.',
                                     tipo: 'info',
                                     });
                             $event.target.value = null;
@@ -152,11 +154,28 @@
                         $event.target.value = null;
                     " />
                     <div class="mt-4" x-show="claseSeleccionada.video" x-cloak>
-                        <video id="previewVideoClase" class="w-full rounded-lg shadow" controls :src="typeof claseSeleccionada.video === 'string'
-                                ? 'api/obtener_video?nombre=' + claseSeleccionada.video
-                                : (claseSeleccionada.video ? URL.createObjectURL(claseSeleccionada.video) : '')">
-                            Tu navegador no soporta la reproducción de video.
-                        </video>
+                        <template x-if="claseSeleccionada.video && (typeof claseSeleccionada.video === 'string' ? claseSeleccionada.video.endsWith('.mp4') : claseSeleccionada.video.type.startsWith('video/'))">
+                            <video id="previewVideoClase" class="w-full rounded-lg shadow" controls :src="typeof claseSeleccionada.video === 'string'
+                                    ? 'api/obtener_video?nombre=' + claseSeleccionada.video
+                                    : (claseSeleccionada.video ? URL.createObjectURL(claseSeleccionada.video) : '')">
+                                Tu navegador no soporta la reproducción de video.
+                            </video>
+                        </template>
+                        <template x-if="claseSeleccionada.video && (typeof claseSeleccionada.video === 'string' ? claseSeleccionada.video.endsWith('.pdf') : claseSeleccionada.video.type === 'application/pdf')">
+                            <embed class="w-full rounded-lg shadow" style="height: 500px;" :src="typeof claseSeleccionada.video === 'string'
+                                    ? 'api/obtener_archivo?nombre=' + claseSeleccionada.video
+                                    : (claseSeleccionada.video ? URL.createObjectURL(claseSeleccionada.video) : '')"
+                                type="application/pdf">
+                        </template>
+                        <template x-if="claseSeleccionada.video && (typeof claseSeleccionada.video === 'string' ? !claseSeleccionada.video.endsWith('.mp4') && !claseSeleccionada.video.endsWith('.pdf') : !claseSeleccionada.video.type.startsWith('video/') && claseSeleccionada.video.type !== 'application/pdf')">
+                            <div class="flex items-center gap-3 p-4 bg-gray-50 border border-gray-300 rounded-lg">
+                                <i class="fas fa-file-alt text-3xl text-blue-900"></i>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-800" x-text="typeof claseSeleccionada.video === 'string' ? claseSeleccionada.video : claseSeleccionada.video.name"></p>
+                                    <p class="text-sm text-gray-500">Archivo cargado correctamente</p>
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </div>
                 <div class="flex justify-end space-x-2 pt-2">

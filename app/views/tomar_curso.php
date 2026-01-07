@@ -70,10 +70,25 @@
                         <div class="bg-white rounded-2xl overflow-hidden">
                             <template x-if="item_actual.tipo === 'clase'">
                                 <div class="bg-black rounded-t-2xl overflow-hidden border-2 border-blue-900">
-                                    <video class="w-full aspect-video" controls controlsList="nodownload"
-                                        :src="'api/obtener_video?nombre=' + item_actual.detalle.video">
-                                        Tu navegador no soporta el elemento de video.
-                                    </video>
+                                    <template x-if="item_actual.detalle.video && item_actual.detalle.video.endsWith('.mp4')">
+                                        <video class="w-full aspect-video" controls controlsList="nodownload"
+                                            :src="'api/obtener_video?nombre=' + item_actual.detalle.video">
+                                            Tu navegador no soporta el elemento de video.
+                                        </video>
+                                    </template>
+                                    <template x-if="item_actual.detalle.video && item_actual.detalle.video.endsWith('.pdf')">
+                                        <embed 
+                                            :src="'api/obtener_archivo?nombre=' + item_actual.detalle.video" 
+                                            type="application/pdf"
+                                            class="w-full aspect-video">
+                                    </template>
+                                    <template x-if="item_actual.detalle.video && !item_actual.detalle.video.endsWith('.mp4') && !item_actual.detalle.video.endsWith('.pdf')">
+                                        <iframe 
+                                            :src="'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(window.location.origin + '/capacitaciones/api/obtener_archivo?nombre=' + item_actual.detalle.video)" 
+                                            class="w-full aspect-video" 
+                                            frameborder="0">
+                                        </iframe>
+                                    </template>
                                 </div>
                             </template>
                             <template x-if="item_actual.tipo === 'anuncio'">

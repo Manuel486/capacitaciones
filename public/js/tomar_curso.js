@@ -204,6 +204,10 @@ function tomarCurso() {
       ) {
         this.marcarCompletado(this.item_actual.id_item);
       } else if (this.item_actual.tipo === "clase") {
+        // Determinar si item_actuale.detalle.video es diferente de mp4
+        if(this.item_actual.detalle.video && !this.item_actual.detalle.video.endsWith('.mp4')) {
+          this.marcarCompletado(this.item_actual.id_item);
+        }
         this.inicializarVideo();
       }
     },
