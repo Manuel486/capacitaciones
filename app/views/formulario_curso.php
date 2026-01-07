@@ -134,11 +134,10 @@
                     <label for="videoClase"
                         class="block w-full cursor-pointer border-2 border-dashed border-blue-400 rounded-lg p-6 text-center text-blue-600 font-semibold text-lg hover:bg-blue-50 transition">
                         <i class="fas fa-cloud-upload-alt text-3xl mb-2"></i><br />
-                        Arrastra o suelta el archivo aquí o haz clic para seleccionar
+                        Arrastra o suelta el archivo (.mp4, .pdf o .pptx) aquí o haz clic para seleccionar
                     </label>
-                    <input type="file" id="videoClase" class="hidden" 
-                        accept="video/*,.pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx"
-                        @change="
+                    <input type="file" id="videoClase" class="hidden"
+                        accept="video/*,.pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx" @change="
                         const file = $event.target.files[0];
                         if (file && file.size > 20 * 1024 * 1024) {
                                 $dispatch('abrir-modal', {
@@ -154,24 +153,36 @@
                         $event.target.value = null;
                     " />
                     <div class="mt-4" x-show="claseSeleccionada.video" x-cloak>
-                        <template x-if="claseSeleccionada.video && (typeof claseSeleccionada.video === 'string' ? claseSeleccionada.video.endsWith('.mp4') : claseSeleccionada.video.type.startsWith('video/'))">
+                        <template
+                            x-if="claseSeleccionada.video && (typeof claseSeleccionada.video === 'string' ? claseSeleccionada.video.endsWith('.mp4') : claseSeleccionada.video.type.startsWith('video/'))">
                             <video id="previewVideoClase" class="w-full rounded-lg shadow" controls :src="typeof claseSeleccionada.video === 'string'
                                     ? 'api/obtener_video?nombre=' + claseSeleccionada.video
                                     : (claseSeleccionada.video ? URL.createObjectURL(claseSeleccionada.video) : '')">
                                 Tu navegador no soporta la reproducción de video.
                             </video>
                         </template>
-                        <template x-if="claseSeleccionada.video && (typeof claseSeleccionada.video === 'string' ? claseSeleccionada.video.endsWith('.pdf') : claseSeleccionada.video.type === 'application/pdf')">
+                        <template
+                            x-if="claseSeleccionada.video && (typeof claseSeleccionada.video === 'string' ? claseSeleccionada.video.endsWith('.pdf') : claseSeleccionada.video.type === 'application/pdf')">
                             <embed class="w-full rounded-lg shadow" style="height: 500px;" :src="typeof claseSeleccionada.video === 'string'
                                     ? 'api/obtener_archivo?nombre=' + claseSeleccionada.video
                                     : (claseSeleccionada.video ? URL.createObjectURL(claseSeleccionada.video) : '')"
                                 type="application/pdf">
                         </template>
-                        <template x-if="claseSeleccionada.video && (typeof claseSeleccionada.video === 'string' ? !claseSeleccionada.video.endsWith('.mp4') && !claseSeleccionada.video.endsWith('.pdf') : !claseSeleccionada.video.type.startsWith('video/') && claseSeleccionada.video.type !== 'application/pdf')">
+                        <template
+                            x-if="claseSeleccionada.video && !claseSeleccionada.video.endsWith('.mp4') && !claseSeleccionada.video.endsWith('.pdf') && claseSeleccionada.id_clase">
+                            <iframe
+                                :src="'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(window.location.origin + '/capacitaciones/api/obtener_archivo?nombre=' + claseSeleccionada.video)"
+                                class="w-full aspect-video" frameborder="0">
+                            </iframe>
+                        </template>
+                        <template
+                            x-if="claseSeleccionada.video && claseSeleccionada.id_clase == '' && (typeof claseSeleccionada.video === 'string' ? !claseSeleccionada.video.endsWith('.mp4') && !claseSeleccionada.video.endsWith('.pdf') : !claseSeleccionada.video.type.startsWith('video/') && claseSeleccionada.video.type !== 'application/pdf')">
                             <div class="flex items-center gap-3 p-4 bg-gray-50 border border-gray-300 rounded-lg">
                                 <i class="fas fa-file-alt text-3xl text-blue-900"></i>
                                 <div class="flex-1">
-                                    <p class="font-semibold text-gray-800" x-text="typeof claseSeleccionada.video === 'string' ? claseSeleccionada.video : claseSeleccionada.video.name"></p>
+                                    <p class="font-semibold text-gray-800"
+                                        x-text="typeof claseSeleccionada.video === 'string' ? claseSeleccionada.video : claseSeleccionada.video.name">
+                                    </p>
                                     <p class="text-sm text-gray-500">Archivo cargado correctamente</p>
                                 </div>
                             </div>
@@ -369,11 +380,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block font-semibold mb-1">Fecha de publicación</label>
-                                <input type="datetime-local" x-model="curso.fecha_publicacion" class="border rounded-md w-full p-2 focus:ring-2 focus:ring-blue-900 focus:border-none outline-none">
+                                <input type="datetime-local" x-model="curso.fecha_publicacion"
+                                    class="border rounded-md w-full p-2 focus:ring-2 focus:ring-blue-900 focus:border-none outline-none">
                             </div>
                             <div>
                                 <label class="block font-semibold mb-1">Fecha de cierre</label>
-                                <input type="datetime-local" x-model="curso.fecha_cierre" class="border rounded-md w-full p-2 focus:ring-2 focus:ring-blue-900 focus:border-none outline-none">
+                                <input type="datetime-local" x-model="curso.fecha_cierre"
+                                    class="border rounded-md w-full p-2 focus:ring-2 focus:ring-blue-900 focus:border-none outline-none">
                             </div>
                         </div>
                     </div>
@@ -651,8 +664,9 @@
                                         No hay personas inscritas.
                                     </div>
                                     <div x-show="usuariosInscritos.length > 0">
-                                        <template x-for="usuario in usuariosInscritos" :key="'INSCRITO-' + usuario.dni" >
-                                            <div x-show="!usuario.ocultarInformacion" :id="'usuario-inscrito' + usuario.dni"
+                                        <template x-for="usuario in usuariosInscritos" :key="'INSCRITO-' + usuario.dni">
+                                            <div x-show="!usuario.ocultarInformacion"
+                                                :id="'usuario-inscrito' + usuario.dni"
                                                 class="border border-gray-200 rounded-lg p-4 mb-3 bg-gray-50 flex items-center justify-between hover:bg-blue-50 transition">
                                                 <div class="flex items-center gap-4 flex-1">
                                                     <div
