@@ -209,10 +209,25 @@ class CursosController
 
         if ($video && $video['error'] === UPLOAD_ERR_OK) {
             $extension = pathinfo($video['name'], PATHINFO_EXTENSION);
-            $nombreArchivo = generarIdUnico('VIDEO_') . '.' . $extension;
+            $identificadorUnico = generarIdUnico('');
+            $nombreArchivo = $identificadorUnico . '.' . $extension;
             $rutaDestino = VIDEOS . $nombreArchivo;
+            $nombreArchivoPdf = $identificadorUnico . '.pdf';
+
             if (move_uploaded_file($video['tmp_name'], $rutaDestino)) {
-                $datosClase['video'] = $nombreArchivo;
+                if (strtolower($extension) === 'pptx') {
+                    
+                    $rutaDestinoPdf = VIDEOS . $nombreArchivoPdf;
+
+                    $libreOfficePath = '"C:\\Program Files\\LibreOffice\\program\\soffice.exe"';
+                    $comando = $libreOfficePath . ' --headless --convert-to pdf:writer_pdf_Export --outdir ' . escapeshellarg(VIDEOS) . ' ' . escapeshellarg($rutaDestino);
+                    exec($comando, $output, $returnCode);
+
+                    unlink($rutaDestino);
+                    $datosClase['video'] = $nombreArchivoPdf;
+                } else {
+                    $datosClase['video'] = $nombreArchivo;
+                }
             }
         }
 
