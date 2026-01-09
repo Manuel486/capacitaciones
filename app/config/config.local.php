@@ -22,3 +22,5 @@ define("BASE_URL", "/capacitaciones/");
 define('APP_VERSION', '1.0.4');
 
 define('CLAVE_TOKEN', 'sepconRRHH2025');
+
+define('RUTA_API_CORREO', 'http://179.49.67.42/master/inc/correoGenerico.inc.php');

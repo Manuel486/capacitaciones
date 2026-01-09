@@ -50,4 +50,36 @@ class CertificadosController
         header('Content-Disposition: inline; filename="' . $certificado["nombre_curso"] . '.pdf"');
         readfile($rutaCertificado);
     }
+
+    public function apiObtenerCertificadoPorIdCertificado()
+    {
+        if (
+            !AuthHelper::verificarAccesoResponsable(
+                ['gestionar_cursos'],
+                'certificado',
+                'Obtener certificado por ID de certificado'
+            )
+        ) {
+            return;
+        }
+
+        $idCertificado = $_GET['id_certificado'] ?? null;
+
+        if (!$idCertificado) {
+            echo ApiRespuesta::error("El parámetro 'id_certificado' es obligatorio");
+            return;
+        }
+
+
+        $rutaCertificado = CERTIFICADOS . $idCertificado . ".pdf";
+
+        if (!file_exists($rutaCertificado)) {
+            echo ApiRespuesta::error("Certificado no encontrado");
+            return;
+        }
+
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: inline; filename="' . $idCertificado . '.pdf"');
+        readfile($rutaCertificado);
+    }
 }

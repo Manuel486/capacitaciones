@@ -1,8 +1,10 @@
 <?php
 
 require_once __DIR__ . "/database/ConexionCapacitaciones.php";
+require_once __DIR__ . "/database/ConexionAquarius.php";
 require_once __DIR__ . "/../helpers/generarIdUnico.php";
 require_once __DIR__ . "/../helpers/crearCertificado.php";
+require_once __DIR__ . '/../helpers/sendCertificado.php';
 
 class CursoUsuarioModel
 {
@@ -10,7 +12,7 @@ class CursoUsuarioModel
     {
     }
 
-    public function marcarItemCompletado($itemId, $cursoUsuarioId, $datosUsuario)
+    public function marcarItemCompletado($itemId, $cursoUsuarioId, $datosUsuario, $nota = null, $nota_minima_aprobatoria = null)
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
@@ -20,14 +22,51 @@ class CursoUsuarioModel
             $existe = $stmt->fetchColumn();
 
             if ($existe) {
-                $query = "UPDATE progreso_item SET completado = 1 WHERE id_item = :id_item AND id_curso_usuario = :id_curso_usuario";
-                $stmt = $pdo->prepare($query);
-                $stmt->execute(['id_item' => $itemId, 'id_curso_usuario' => $cursoUsuarioId]);
+                if ($nota !== null) {
+                    $completado = 0;
+                    if ($nota_minima_aprobatoria !== null) {
+                        if ($nota >= $nota_minima_aprobatoria) {
+                            $completado = 1;
+                        }
+                    }
+                    $query = "UPDATE progreso_item SET completado = :completado, nota = :nota WHERE id_item = :id_item AND id_curso_usuario = :id_curso_usuario";
+                    $stmt = $pdo->prepare($query);
+                    $stmt->execute([
+                        'nota' => $nota,
+                        'id_item' => $itemId,
+                        'id_curso_usuario' => $cursoUsuarioId,
+                        'completado' => $completado
+                    ]);
+                } else {
+                    $query = "UPDATE progreso_item SET completado = 1 WHERE id_item = :id_item AND id_curso_usuario = :id_curso_usuario";
+                    $stmt = $pdo->prepare($query);
+                    $stmt->execute(['id_item' => $itemId, 'id_curso_usuario' => $cursoUsuarioId]);
+                }
+
             } else {
-                $idProgresoItem = generarIdUnico("PRI");
-                $query = "INSERT INTO progreso_item (id_progreso, id_item, id_curso_usuario, completado) VALUES (:id_progreso, :id_item, :id_curso_usuario, 1)";
-                $stmt = $pdo->prepare($query);
-                $stmt->execute(['id_progreso' => $idProgresoItem, 'id_item' => $itemId, 'id_curso_usuario' => $cursoUsuarioId]);
+                if ($nota !== null) {
+                    $completado = 0;
+                    if ($nota_minima_aprobatoria !== null) {
+                        if ($nota >= $nota_minima_aprobatoria) {
+                            $completado = 1;
+                        }
+                    }
+                    $idProgresoItem = generarIdUnico("PRI");
+                    $query = "INSERT INTO progreso_item (id_progreso, id_item, id_curso_usuario, completado, nota) VALUES (:id_progreso, :id_item, :id_curso_usuario, :completado, :nota)";
+                    $stmt = $pdo->prepare($query);
+                    $stmt->execute([
+                        'id_progreso' => $idProgresoItem,
+                        'id_item' => $itemId,
+                        'id_curso_usuario' => $cursoUsuarioId,
+                        'completado' => $completado,
+                        'nota' => $nota
+                    ]);
+                } else {
+                    $idProgresoItem = generarIdUnico("PRI");
+                    $query = "INSERT INTO progreso_item (id_progreso, id_item, id_curso_usuario, completado) VALUES (:id_progreso, :id_item, :id_curso_usuario, 1)";
+                    $stmt = $pdo->prepare($query);
+                    $stmt->execute(['id_progreso' => $idProgresoItem, 'id_item' => $itemId, 'id_curso_usuario' => $cursoUsuarioId]);
+                }
             }
 
             $queryItems = "SELECT ti.id_referencia, ti.tipo FROM tema_item ti
@@ -75,9 +114,7 @@ class CursoUsuarioModel
             $updateStmt = $pdo->prepare($updateCursoUsuarioQuery);
             $updateStmt->execute(['progreso' => $progreso, 'id_curso_usuario' => $cursoUsuarioId]);
 
-            // Si el progreso es 100%, marcar el curso como completado
             if ($progreso >= 100) {
-                // Buscar el curso para saber si tiene certificado
                 $queryCurso = "SELECT c.tiene_certificacion, c.nombre  
                                 FROM curso c
                                 JOIN curso_usuario cu ON c.id_curso = cu.id_curso
@@ -86,7 +123,7 @@ class CursoUsuarioModel
                 $stmtCurso->execute(['id_curso_usuario' => $cursoUsuarioId]);
                 $curso = $stmtCurso->fetch(PDO::FETCH_ASSOC);
 
-                if($curso && $curso['tiene_certificacion'] == 1){
+                if ($curso && $curso['tiene_certificacion'] == 1) {
                     $id_certificado = generarIdUnico("CER");
                     $updateCertificadoQuery = "UPDATE curso_usuario SET certificado = :certificado WHERE id_curso_usuario = :id_curso_usuario";
                     $updateCertificadoStmt = $pdo->prepare($updateCertificadoQuery);
@@ -95,8 +132,51 @@ class CursoUsuarioModel
                     crearCertificado(
                         $datosUsuario->apellidos . ' ' . $datosUsuario->nombres,
                         $curso['nombre'],
-                    $id_certificado
+                        $id_certificado
                     );
+
+                    // Obtener información del usuario con el cursoUsuarioId
+                    $sqlUsuario = "SELECT id_usuario FROM curso_usuario WHERE id_curso_usuario = :id_curso_usuario";
+                    $stmtUsuario = $pdo->prepare($sqlUsuario);
+                    $stmtUsuario->execute(['id_curso_usuario' => $cursoUsuarioId]);
+                    $usuarioData = $stmtUsuario->fetch(PDO::FETCH_ASSOC);
+
+                    if ($usuarioData) {
+                        $correoUsuario = $this->obtenerInformacionDelUltimoIngreso($usuarioData['id_usuario']);
+                        $nombreCertificado = $curso['nombre'] . ' - ' . $datosUsuario->apellidos . ' ' . $datosUsuario->nombres . '.pdf';
+
+                        if ($correoUsuario && isset($correoUsuario['email']) && !empty($correoUsuario['email'])) {
+
+                            $contenidoCertificado = file_get_contents(CERTIFICADOS . $id_certificado . ".pdf");
+                            $adjuntos = [];
+                            if ($contenidoCertificado != false) {
+                                $adjuntos[] = [
+                                    'path' => CERTIFICADOS . $id_certificado . ".pdf",
+                                    'name' => $nombreCertificado,
+                                    'mime' => 'application/pdf'
+                                ];
+                            }
+                            // Correo usuario es un string
+
+                            $datosCorreo = [
+                                'funcion' => 'mailGenerico',
+                                'para' => $correoUsuario['email'],
+                                'cc' => '',
+                                'asunto' => 'Certificado de Curso: ' . $curso['nombre'],
+                                'mensaje' => 'Estimado(a) ' . $datosUsuario->nombres . ', adjuntamos su certificado por haber completado el curso "' . $curso['nombre'] . '".',
+                                'remitenteNombre' => 'Sistema de Capacitaciones',
+                                'correoRemitente' => 'fichas@sepcon.net',
+                                'adjuntos' => $adjuntos,
+                                "generar_eml" => "0"
+
+                            ];
+                            sendCertificado($datosCorreo);
+                        }
+                    }
+
+                    // Enviar correo con el certificado
+
+
                 }
             }
 
@@ -106,11 +186,39 @@ class CursoUsuarioModel
         }
     }
 
+    public function obtenerInformacionDelUltimoIngreso($dni)
+    {
+        $pdoDocumentos = ConexionAquarius::getInstancia()->getConexion();
+        try {
+            $sql = "SELECT TOP (1) ma.NUM_DOC_IDENTIDAD AS 'dni', ma.NUM_EMAIL AS 'email', pp.FEC_INGRESO AS 'fec_ingreso'
+                    FROM MAE_AUXILIAR ma 
+                    INNER JOIN PLA_PERSONAL pp ON pp.COD_AUXILIAR = ma.COD_AUXILIAR
+                    WHERE ma.NUM_DOC_IDENTIDAD = :dni
+                    ORDER BY pp.FEC_INGRESO DESC";
+            $statement = $pdoDocumentos->prepare($sql);
+            $statement->execute([
+                'dni' => $dni
+            ]);
+            $ingreso = $statement->fetch(PDO::FETCH_ASSOC);
+            return $ingreso ?: null;
+        } catch (PDOException $e) {
+            return null;
+        }
+    }
+
     public function obtenerMisCursos($idUsuario)
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
-            $query = "SELECT c.id_curso, c.nombre, c.descripcion, c.imagen, cu.fecha_inicio, cu.progreso, cu.obligatorio
+            $query = "SELECT c.id_curso, c.nombre, c.descripcion, c.imagen, cu.fecha_inicio, cu.progreso, cu.obligatorio, c.tiene_certificacion,
+                      CASE
+                        WHEN c.fecha_publicacion IS NOT NULL AND c.fecha_cierre IS NULL THEN 1
+                        WHEN c.fecha_publicacion IS NOT NULL
+                        AND c.fecha_cierre IS NOT NULL
+                        AND CURRENT_DATE BETWEEN c.fecha_publicacion AND c.fecha_cierre
+                        THEN 1
+                        ELSE 0
+                      END AS activo
                       FROM curso_usuario cu
                       INNER JOIN curso c ON cu.id_curso = c.id_curso
                       WHERE cu.id_usuario = :id_usuario";
@@ -128,6 +236,7 @@ class CursoUsuarioModel
         try {
             $query = "SELECT c.*,
                       CASE
+                        WHEN c.fecha_publicacion IS NOT NULL AND c.fecha_cierre IS NULL THEN 1
                         WHEN c.fecha_publicacion IS NOT NULL
                         AND c.fecha_cierre IS NOT NULL
                         AND CURRENT_DATE BETWEEN c.fecha_publicacion AND c.fecha_cierre

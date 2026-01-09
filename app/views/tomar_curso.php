@@ -37,7 +37,7 @@
                     </a>
                 </div>
                 <template x-if="!cargando && curso.nombre">
-                    <h1 class="text-lg md:text-xl font-bold text-gray-800" x-text="curso.nombre"></h1>
+                    <h1 class="text-lg md:text-lg font-bold text-gray-800" x-text="curso.nombre"></h1>
                 </template>
                 <template x-if="cargando">
                     <div class="h-6 bg-gray-200 rounded-lg w-64 animate-pulse"></div>
@@ -53,7 +53,7 @@
         </div>
     </div>
 
-    <div class="min-h-screen">
+    <div class="min-h-screen bg-gray-100">
         <div class="mx-auto px-4 sm:px-6 lg:px-30 2xl:px-50 py-6">
             <div class="grid grid-cols-1"
                 :class="{'lg:grid-cols-12 gap-6': !modo_evaluacion, 'lg:grid-cols-1': modo_evaluacion}">
@@ -67,26 +67,26 @@
                         </div>
                     </template>
                     <template x-if="!cargando">
-                        <div class="bg-white rounded-2xl overflow-hidden">
+                        <div class="rounded-2xl overflow-hidden">
                             <template x-if="item_actual.tipo === 'clase'">
                                 <div class="bg-black rounded-t-2xl overflow-hidden border-2 border-blue-900">
-                                    <template x-if="item_actual.detalle.video && item_actual.detalle.video.endsWith('.mp4')">
+                                    <template
+                                        x-if="item_actual.detalle.video && item_actual.detalle.video.endsWith('.mp4')">
                                         <video class="w-full aspect-video" controls controlsList="nodownload"
                                             :src="'api/obtener_video?nombre=' + item_actual.detalle.video">
                                             Tu navegador no soporta el elemento de video.
                                         </video>
                                     </template>
-                                    <template x-if="item_actual.detalle.video && item_actual.detalle.video.endsWith('.pdf')">
-                                        <embed 
-                                            :src="'api/obtener_archivo?nombre=' + item_actual.detalle.video" 
-                                            type="application/pdf"
-                                            class="w-full aspect-video">
+                                    <template
+                                        x-if="item_actual.detalle.video && item_actual.detalle.video.endsWith('.pdf')">
+                                        <embed :src="'api/obtener_archivo?nombre=' + item_actual.detalle.video"
+                                            type="application/pdf" class="w-full aspect-video">
                                     </template>
-                                    <template x-if="item_actual.detalle.video && !item_actual.detalle.video.endsWith('.mp4') && !item_actual.detalle.video.endsWith('.pdf')">
-                                        <iframe 
-                                            :src="'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(window.location.origin + '/capacitaciones/api/obtener_archivo?nombre=' + item_actual.detalle.video)" 
-                                            class="w-full aspect-video" 
-                                            frameborder="0">
+                                    <template
+                                        x-if="item_actual.detalle.video && !item_actual.detalle.video.endsWith('.mp4') && !item_actual.detalle.video.endsWith('.pdf')">
+                                        <iframe
+                                            :src="'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(window.location.origin + '/capacitaciones/api/obtener_archivo?nombre=' + item_actual.detalle.video)"
+                                            class="w-full aspect-video" frameborder="0">
                                         </iframe>
                                     </template>
                                 </div>
@@ -101,7 +101,7 @@
                                                 <i class="fas fa-bullhorn text-blue-900 text-4xl"></i>
                                             </div>
                                         </div>
-                                        <span class="block text-gray-800 text-xl font-bold"
+                                        <span class="block text-gray-800"
                                             x-text="item_actual.detalle.anuncio ?? 'Anuncio'"></span>
                                     </div>
                                 </div>
@@ -109,9 +109,9 @@
                             <template x-if="item_actual.tipo === 'evaluacion'">
                                 <div>
                                     <div x-show="!modo_evaluacion"
-                                        class="bg-gray-100 h-100 flex items-center justify-center">
+                                        class="bg-white h-100 flex items-center justify-center">
                                         <div
-                                            class="max-w-xl w-full p-8 rounded-lg shadow-md bg-white border border-gray-200">
+                                            class="max-w-xl w-full p-8 rounded-lg shadow-md  border border-gray-200">
                                             <div class="flex gap-4 mb-4">
                                                 <i class="fas fa-file-alt text-gray-700 text-3xl"></i>
                                                 <span class="block text-gray-700 text-lg font-semibold"
@@ -119,8 +119,43 @@
                                             </div>
                                             <!-- <span class="block text-gray-700 text-md"
                                             x-text="item_actual.detalle.descripcion"></span> -->
-                                            <span class="font-medium">Nota: Para aprobar necesita responder al menos el
-                                                70% del examen</span>
+                                            <template x-if="item_actual.nota !== null">
+                                                <div 
+                                                    class="mt-4 p-4 border rounded-lg"
+                                                    :class="item_actual.nota >= item_actual.detalle.nota_minima_aprobatoria 
+                                                        ? 'bg-green-50 border-green-200' 
+                                                        : 'bg-red-50 border-red-200'"
+                                                >
+                                                    <span 
+                                                        :class="item_actual.nota >= item_actual.detalle.nota_minima_aprobatoria 
+                                                            ? 'text-green-800 font-semibold' 
+                                                            : 'text-red-800 font-semibold'"
+                                                    >
+                                                        Nota obtenida:
+                                                        <span class="font-bold" x-text="item_actual.nota"></span>
+                                                    </span>
+                                                </div>
+                                            </template>
+
+                                            <template x-if="item_actual.nota == null">
+                                                <div class="flex flex-col gap-3 mt-4 p-4 bg-blue-50 border-l-4 border-blue-900 rounded-lg shadow-sm">
+                                                    <div class="flex items-center gap-3">
+                                                        <div>
+                                                            <span class="font-bold text-blue-900">Nota:</span>
+                                                            <span class="text-gray-700">Para aprobar necesita obtener un puntaje mínimo de</span>
+                                                            <span class="font-bold text-blue-900" x-text="item_actual.detalle.nota_minima_aprobatoria"></span>.
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex items-center gap-3">
+                                                        <div>
+                                                            <span class="font-bold text-blue-900">Duración:</span>
+                                                            <span class="text-gray-700">La prueba tiene una duración de</span>
+                                                            <span class="font-bold text-blue-900" x-text="obtenerDuracionEvaluacion(item_actual.detalle.tiempo_duracion)"></span>.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+
                                             <button x-show="item_actual.completado == 0"
                                                 @click="activarModoEvaluacion()"
                                                 class="group mx-auto cursor-pointer mt-6 px-6 py-2 bg-blue-900 hover:bg-white hover:text-blue-900 border hover:boder-blue-900 text-white font-semibold rounded-lg shadow transition duration-200 flex items-center gap-2">
@@ -138,13 +173,12 @@
                                                     <div class="bg-white rounded-xl shadow-lg p-6 sticky top-4">
                                                         <div x-show="temporizador_activo" class="mb-6">
                                                             <div class="flex items-center justify-between mb-2">
-                                                                <span class="text-sm font-medium text-gray-600">Tiempo
-                                                                    restante</span>
+                                                                <span class="text-sm font-medium text-gray-600">Tiempo restante</span>
                                                                 <i class="fas fa-clock text-blue-900"></i>
                                                             </div>
                                                             <div
-                                                                class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg p-4 text-center">
-                                                                <span class="text-3xl font-bold text-white"
+                                                                class="border-2 border-blue-900 rounded-lg p-4 text-center">
+                                                                <span class="text-3xl font-bold text-blue-900"
                                                                     x-text="formatearTiempo(tiempo_restante)"></span>
                                                             </div>
                                                         </div>
@@ -314,7 +348,7 @@
                                 </div>
                             </template>
 
-                            <div x-show="!modo_evaluacion" class="p-6 md:p-8">
+                            <div x-show="!modo_evaluacion" class="p-6 md:p-8 bg-white">
                                 <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4"
                                     x-text="item_actual.detalle.titulo">Título de la clase actual</h2>
                                 <div class="border-t-2 border-gray-200 pt-6">

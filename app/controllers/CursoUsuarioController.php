@@ -51,12 +51,14 @@ class CursoUsuarioController
 
         $itemId = $_POST['item_id'] ?? null;
         $cursoUsuarioId = $_POST['curso_usuario_id'] ?? null;
+        $nota = $_POST['nota'] ?? null;
+        $nota_minima_aprobatoria = $_POST['nota_minima_aprobatoria'] ?? null;
 
         if (!$itemId || !$cursoUsuarioId) {
             echo ApiRespuesta::error("Los parámetros 'item_id' y 'curso_usuario_id' son obligatorios");
             return;
         }
-        $actualizado = $this->cursoUsuarioModel->marcarItemCompletado($itemId, $cursoUsuarioId, $sesion->data);
+        $actualizado = $this->cursoUsuarioModel->marcarItemCompletado($itemId, $cursoUsuarioId, $sesion->data, $nota, $nota_minima_aprobatoria);
 
         echo ApiRespuesta::exitoso($actualizado, "Marcaddo como completado exitosamente");
     }

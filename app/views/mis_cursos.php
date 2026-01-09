@@ -110,7 +110,12 @@
                         </template>
                         <template x-if="!cargando">
                             <template x-for="(curso, index) in cursos" :key="curso.id_curso">
-                                <div class="">
+                                <div class="relative">
+                                    <div x-show="curso.activo == 0"
+                                        class="absolute top-2 left-2 bg-red-600 bg-opacity-70 text-white text-xs font-bold px-2 py-1 rounded z-60 backdrop-blur-sm">
+                                        Ya no disponible
+                                    </div>
+                                    <div x-show="curso.activo == 0" class="absolute inset-0 w-full h-full z-50 rounded lg" style="background-color: rgba(232, 232, 232, .5);"></div>
                                     <div
                                         class="bg-white rounded-lg h-full shadow-md hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden hover:shadow-4xl">
                                         <img :src="curso.imagen ? 'public/assets/portadas/' + curso.imagen : 'public/assets/portadas/plantilla.jpg'"
@@ -135,7 +140,7 @@
                                                     class="px-3 py-1 hover:bg-blue-900 border border-blue-900 bg-white hover:text-white rounded transition text-xs font-semibold shadow-sm">
                                                     Continuar
                                                 </a>
-                                                <a x-show="curso.progreso == 100"
+                                                <a x-show="curso.progreso == 100 && curso.tiene_certificacion == 1"
                                                     :href="'api/obtener_certificado?id_curso=' + curso.id_curso"
                                                     target="_blank"
                                                     class="underline flex items-center gap-1 text-gray-600 hover:text-blue-700 text-xs font-medium cursor-pointer">

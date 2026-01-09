@@ -30,7 +30,7 @@
 
     <div x-show="modalEvaluacion" x-cloak class="fixed inset-0 flex items-center justify-center z-100 p-4"
         style="background: rgba(0,0,0,0.5);">
-        <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full p-4 sm:p-6 relative max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-lg max-w-3xl w-full p-4 sm:p-6 relative max-h-[90vh] overflow-y-auto">
             <button @click="cerrarEvaluacionModal()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
                 <i class="fas fa-times text-xl"></i>
             </button>
@@ -49,6 +49,20 @@
                     <textarea x-model="evaluacionSeleccionada.descripcion"
                         class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
                         rows="5" placeholder="Descripción de la evaluación"></textarea>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">Tiempo de duración de la evaluación (en minutos) <span
+                            class="text-red-600 font-bold">*</span></label>
+                    <input type="number" x-model="evaluacionSeleccionada.tiempo_duracion"
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
+                        placeholder="Tiempo en minutos" min="1" />
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">Nota mínima aprobatoria <span
+                            class="text-red-600 font-bold">*</span></label>
+                    <input type="number" x-model="evaluacionSeleccionada.nota_minima_aprobatoria"
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-400"
+                        placeholder="Nota mínima aprobatoria" min="0" max="20" step="0.1" />
                 </div>
                 <button type="button" @click="agregarPregunta()"
                     class="px-3 py-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition mb-4">
@@ -110,7 +124,7 @@
 
     <div x-show="modalClase" x-cloak class="fixed inset-0 flex items-center justify-center z-100 p-4"
         style="background: rgba(0,0,0,0.5);">
-        <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-4 sm:p-6 relative max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-lg max-w-3xl w-full p-4 sm:p-6 relative max-h-[90vh] overflow-y-auto">
             <button @click="cerrarModalClase()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
                 <i class="fas fa-times text-xl"></i>
             </button>
@@ -169,14 +183,14 @@
                                 type="application/pdf">
                         </template>
                         <template
-                            x-if="claseSeleccionada.video && !claseSeleccionada.video.endsWith('.mp4') && !claseSeleccionada.video.endsWith('.pdf') && claseSeleccionada.id_clase">
+                            x-if="claseSeleccionada.video && claseSeleccionada.id_clase != '' && claseSeleccionada.id_clase != null && (typeof claseSeleccionada.video === 'string' ? claseSeleccionada.video.endsWith('.pptx') || claseSeleccionada.video.endsWith('.ppt') || claseSeleccionada.video.endsWith('.docx') || claseSeleccionada.video.endsWith('.doc') || claseSeleccionada.video.endsWith('.xlsx') || claseSeleccionada.video.endsWith('.xls') : claseSeleccionada.video.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' || claseSeleccionada.video.type === 'application/vnd.ms-powerpoint' || claseSeleccionada.video.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || claseSeleccionada.video.type === 'application/msword' || claseSeleccionada.video.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || claseSeleccionada.video.type === 'application/vnd.ms-excel')">
                             <iframe
                                 :src="'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(window.location.origin + '/capacitaciones/api/obtener_archivo?nombre=' + claseSeleccionada.video)"
                                 class="w-full aspect-video" frameborder="0">
                             </iframe>
                         </template>
                         <template
-                            x-if="claseSeleccionada.video && claseSeleccionada.id_clase == '' && (typeof claseSeleccionada.video === 'string' ? !claseSeleccionada.video.endsWith('.mp4') && !claseSeleccionada.video.endsWith('.pdf') : !claseSeleccionada.video.type.startsWith('video/') && claseSeleccionada.video.type !== 'application/pdf')">
+                            x-if="claseSeleccionada.video && claseSeleccionada.id_clase == null && (typeof claseSeleccionada.video === 'string' ? !claseSeleccionada.video.endsWith('.mp4') && !claseSeleccionada.video.endsWith('.pdf') : !claseSeleccionada.video.type.startsWith('video/') && claseSeleccionada.video.type !== 'application/pdf')">
                             <div class="flex items-center gap-3 p-4 bg-gray-50 border border-gray-300 rounded-lg">
                                 <i class="fas fa-file-alt text-3xl text-blue-900"></i>
                                 <div class="flex-1">
@@ -623,7 +637,7 @@
                     </div>
                     <div :class="{'md:col-span-2': !buscadorDePersonasOculto}">
                         <button @click="ocultarMostrarBuscadorDePersonas()"
-                            class="hidden flex items-center gap-2 px-4 py-2 mb-4 rounded-lg shadow border border-blue-900 bg-white text-blue-900 hover:bg-blue-900 hover:text-white transition-all duration-300"
+                            class="flex items-center gap-2 px-4 py-2 mb-4 rounded-lg shadow border border-blue-900 bg-white text-blue-900 hover:bg-blue-900 hover:text-white transition-all duration-300"
                             :aria-expanded="!buscadorDePersonasOculto">
                             <template x-if="buscadorDePersonasOculto">
                                 <i class="fas fa-eye-slash"></i>
@@ -680,12 +694,23 @@
                                                         <p class="text-sm text-gray-500"
                                                             x-text="'DNI: ' + usuario.dni + ' • Cargo: ' + usuario.dcargo">
                                                         </p>
+                                                        <!-- <p class="text-sm text-gray-500" x-text="'Proyecto: '+usuario.dcostos"></p> -->
+                                                        <template x-if="curso.tiene_certificacion == 1">
+                                                            <template x-if="usuario.certificado !== null">
+                                                                <a :href="'api/obtener_certificado_id?id_certificado=' + usuario.certificado"
+                                                                    target="_blank"
+                                                                    class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded hover:bg-green-200 text-xs font-semibold transition">
+                                                                    <i class="fas fa-certificate"></i>
+                                                                    Ver certificado
+                                                                </a>
+                                                            </template>
+                                                        </template>
                                                         <div class="mt-1">
                                                             <span class="text-xs text-green-700 font-semibold"
-                                                                x-text="'Avance: ' + obtenerProgresodelUsuario(usuario.dni) + '%'"></span>
+                                                                x-text="'Avance: ' + usuario.progreso + '%'"></span>
                                                             <div class="w-40 h-2 bg-gray-200 rounded mt-1">
                                                                 <div class="h-2 bg-green-500 rounded"
-                                                                    :style="'width:' + obtenerProgresodelUsuario(usuario.dni) + '%'">
+                                                                    :style="'width:' + usuario.progreso + '%'">
                                                                 </div>
                                                             </div>
                                                         </div>

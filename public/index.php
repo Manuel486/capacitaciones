@@ -73,6 +73,7 @@ route($router, 'GET', '/api/obtener_archivo', 'ArchivosController', 'apiObtenerA
 
 // =============== CERTIFICADOS CONTROLLER ===============
 route($router, 'GET', '/api/obtener_certificado', 'CertificadosController', 'apiObtenerCertificadoPorIdCursoIdUsuario');
+route($router, 'GET', '/api/obtener_certificado_id', 'CertificadosController', 'apiObtenerCertificadoPorIdCertificado');
 
 $match = $router->match();
 

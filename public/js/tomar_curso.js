@@ -49,8 +49,10 @@ function tomarCurso() {
       this.pregunta_actual = 0;
       this.respuestas_evaluacion = {};
       
-      if (this.item_actual.detalle.tiempo_limite && this.item_actual.detalle.tiempo_limite > 0) {
-        this.tiempo_restante = this.item_actual.detalle.tiempo_limite * 60;
+      if (this.item_actual.detalle.tiempo_duracion && this.item_actual.detalle.tiempo_duracion > 0) {
+        // Viene como texto en minutos
+        this.tiempo_restante = parseInt(this.item_actual.detalle.tiempo_duracion) * 60;
+        // this.tiempo_restante = this.item_actual.detalle.tiempo_duracion * 60;
         this.temporizador_activo = true;
         this.iniciarTemporizador();
       } else {
@@ -61,18 +63,17 @@ function tomarCurso() {
       if (this.temporizador_interval) {
         clearInterval(this.temporizador_interval);
       }
-      
       this.temporizador_interval = setInterval(() => {
         if (this.tiempo_restante > 0) {
           this.tiempo_restante--;
         } else {
           this.detenerTemporizador();
-          this.$dispatch("abrir-modal", {
-            titulo: "Tiempo agotado",
-            mensaje: "El tiempo para completar la evaluación ha terminado. Se enviarán tus respuestas actuales.",
-            tipo: "advertencia",
-          });
-          this.enviarEvaluacionActual();
+          // this.$dispatch("abrir-modal", {
+          //   titulo: "Tiempo agotado",
+          //   mensaje: "El tiempo para completar la evaluación ha terminado. Se enviarán tus respuestas actuales.",
+          //   tipo: "advertencia",
+          // });
+          this.enviarEvaluacionActual(true);
         }
       }, 1000);
     },
@@ -107,9 +108,9 @@ function tomarCurso() {
     obtenerRespuesta(idPregunta) {
       return this.respuestas_evaluacion[idPregunta] || null;
     },
-    enviarEvaluacionActual() {
+    enviarEvaluacionActual(porTiempoAgotado = false) {
       this.detenerTemporizador();
-      
+
       let correctas = 0;
       let totalPreguntas = this.item_actual.detalle.preguntas.length;
       let preguntasRespondidas = Object.keys(this.respuestas_evaluacion).length;
@@ -128,7 +129,7 @@ function tomarCurso() {
         }
       });
       
-      if (preguntasRespondidas < totalPreguntas) {
+      if ((preguntasRespondidas < totalPreguntas) && !porTiempoAgotado) {
         this.$dispatch("abrir-modal", {
           titulo: "Evaluación incompleta",
           mensaje: `Debes responder todas las preguntas. Has respondido ${preguntasRespondidas} de ${totalPreguntas}.`,
@@ -137,31 +138,38 @@ function tomarCurso() {
         return;
       }
 
-      const porcentaje = (correctas / totalPreguntas) * 100;
-      const aprobo = porcentaje >= 70;
+      // const porcentaje = (correctas / totalPreguntas) * 100;
+      // const aprobo = porcentaje >= 70;
+
+      // La maxima nota es 20
+      let nota = (correctas / totalPreguntas) * 20;
+      nota = Math.round(nota);
+      let aprobo = nota >= this.item_actual.detalle.nota_minima_aprobatoria;
+      
+      // const porcentaje = (nota / 20) * 100;
 
       if (aprobo) {
         this.$dispatch("abrir-modal", {
           titulo: "¡Felicidades!",
-          mensaje: `Has aprobado la evaluación con ${correctas} de ${totalPreguntas} respuestas correctas (${Math.round(
-            porcentaje
-          )}%).`,
+          mensaje: `Has aprobado la evaluación con ${correctas} de ${totalPreguntas} respuestas correctas.`,
           tipo: "exito",
         });
-        this.marcarCompletado(this.item_actual.id_item);
-        this.modo_evaluacion = false;
-        this.respuestas_evaluacion = {};
+        // this.marcarCompletado(this.item_actual.id_item,);
+        // this.modo_evaluacion = false;
+        // this.respuestas_evaluacion = {};
       } else {
         this.$dispatch("abrir-modal", {
           titulo: "Evaluación no aprobada",
-          mensaje: `Obtuviste ${Math.round(
-            porcentaje
-          )}% (${correctas}/${totalPreguntas} correctas). Necesitas al menos 70%. Inténtalo de nuevo.`,
+          mensaje: `Obtuviste (${correctas}/${totalPreguntas} correctas). Necesitas una nota mínima de ${this.item_actual.detalle.nota_minima_aprobatoria} para aprobar.`,
           tipo: "advertencia",
         });
-        this.modo_evaluacion = false;
-        this.respuestas_evaluacion = {};
+        // this.modo_evaluacion = false;
+        // this.respuestas_evaluacion = {};
       }
+      this.marcarCompletado(this.item_actual.id_item, nota);
+      this.modo_evaluacion = false;
+      this.respuestas_evaluacion = {};
+      
     },
     enviarEvaluacion(event) {
       event.preventDefault();
@@ -237,7 +245,7 @@ function tomarCurso() {
         });
       });
     },
-    async marcarCompletado(id_item) {
+    async marcarCompletado(id_item, nota = null) {
       if (this.procesandoCompletado) {
         return;
       }
@@ -263,6 +271,10 @@ function tomarCurso() {
         let formData = new FormData();
         formData.append("curso_usuario_id", this.curso.curso_usuario_id);
         formData.append("item_id", id_item);
+        if (nota !== null) {
+          formData.append("nota", nota);
+          formData.append("nota_minima_aprobatoria", this.item_actual.detalle.nota_minima_aprobatoria);
+        }
         const response = await fetch("api/marcar_completado", {
           method: "POST",
           body: formData,
@@ -272,7 +284,16 @@ function tomarCurso() {
           for (const tema of this.curso.temas) {
             for (const item of tema.items) {
               if (item.id_item === id_item) {
-                item.completado = 1;
+                if(this.item_actual.tipo === "evaluacion" && nota !== null) {
+                  if(nota >= this.item_actual.detalle.nota_minima_aprobatoria) {
+                    item.completado = 1;
+                  } else {
+                    item.completado = 0;
+                  }
+                  item.nota = nota;
+                } else {
+                  item.completado = 1;
+                }
                 break;
               }
             }
@@ -339,6 +360,13 @@ function tomarCurso() {
     },
     cerrarModalComentario() {
       this.modalComentario = false;
+    },
+    obtenerDuracionEvaluacion(tiempoDuracion) {
+      if(parseInt(tiempoDuracion) === 1) {
+        return `${tiempoDuracion} minuto`;
+      } else {
+        return `${tiempoDuracion} minutos`;
+      }
     },
     async guardarComentario() {
       if (!this.comentario.trim()) {

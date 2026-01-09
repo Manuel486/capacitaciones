@@ -48,6 +48,8 @@ function nuevoCursoComponente() {
       id_item: null,
       titulo: "",
       descripcion: "",
+      tiempo_duracion: null,
+      nota_minima_aprobatoria: null,
       preguntas: [],
       activo: 1,
       orden: 0,
@@ -93,6 +95,8 @@ function nuevoCursoComponente() {
           const usuariosConSeleccion = data.respuesta.map((usuario) => ({
             ...usuario,
             seleccionado: false,
+            progreso: 0,
+            certificado: null,
           }));
 
           this.usuariosOriginalesDisponibles = usuariosConSeleccion;
@@ -277,23 +281,29 @@ function nuevoCursoComponente() {
 
       if (termino === "") {
         this.usuariosInscritos.forEach((usuario) => {
-          const elemento = document.getElementById('usuario-inscrito' + usuario.dni);
+          const elemento = document.getElementById(
+            "usuario-inscrito" + usuario.dni
+          );
           if (elemento) {
-            elemento.style.display = '';
+            elemento.style.display = "";
           }
         });
         return;
       }
 
       this.usuariosInscritosOriginal.forEach((usuario) => {
-        const elemento = document.getElementById('usuario-inscrito' + usuario.dni);
+        const elemento = document.getElementById(
+          "usuario-inscrito" + usuario.dni
+        );
         if (elemento) {
           const coincide =
-        (usuario.nombres && usuario.nombres.toLowerCase().includes(termino)) ||
-        (usuario.apellidos && usuario.apellidos.toLowerCase().includes(termino)) ||
-        (usuario.dni && usuario.dni.toLowerCase().includes(termino)) ||
-        (usuario.dcargo && usuario.dcargo.toLowerCase().includes(termino));
-          elemento.style.display = coincide ? '' : 'none';
+            (usuario.nombres &&
+              usuario.nombres.toLowerCase().includes(termino)) ||
+            (usuario.apellidos &&
+              usuario.apellidos.toLowerCase().includes(termino)) ||
+            (usuario.dni && usuario.dni.toLowerCase().includes(termino)) ||
+            (usuario.dcargo && usuario.dcargo.toLowerCase().includes(termino));
+          elemento.style.display = coincide ? "" : "none";
         }
       });
     },
@@ -327,8 +337,16 @@ function nuevoCursoComponente() {
         }
 
         if (this.usuariosInscritos.length > 0) {
-          const idsUsuarios = this.usuariosInscritos.map((u) => u.dni);
-          formData.append("ids_usuarios", JSON.stringify(idsUsuarios));
+          const usuarios = this.usuariosInscritos.map((u) => {
+            return {
+              id_usuario: u.dni,
+              cargo: u.dcargo,
+              ccostos: u.ccostos,
+              dcostos: u.dcostos,
+              sede: u.sede,
+            };
+          });
+          formData.append("usuarios", JSON.stringify(usuarios));
         }
 
         formData.append("editar", this.modoEdicion);
@@ -492,11 +510,30 @@ function nuevoCursoComponente() {
           }
 
           if (Array.isArray(data.respuesta.usuariosInscritos)) {
-            const inscritosSet = new Set(data.respuesta.usuariosInscritos);
+            const inscritosMap = new Map(
+              data.respuesta.usuariosInscritos.map((u) => [u.id_usuario, u])
+            );
 
-            this.usuariosInscritos = this.usuariosOriginalesDisponibles
-              .filter((usuario) => inscritosSet.has(usuario.dni))
-              .map((usuario) => ({ ...usuario, seleccionado: false }));
+            this.usuariosInscritos = data.respuesta.usuariosInscritos.map(
+              (usuarioInscrito) => {
+                const usuarioCompleto = this.usuariosOriginalesDisponibles.find(
+                  (u) => u.dni === usuarioInscrito.id_usuario
+                );
+
+                return {
+                  ...(usuarioCompleto || {}),
+                  dni: usuarioInscrito.id_usuario,
+                  seleccionado: false,
+                  cargo: usuarioInscrito.cargo,
+                  dcargo: usuarioInscrito.cargo,
+                  ccostos: usuarioInscrito.ccostos,
+                  dcostos: usuarioInscrito.dcostos,
+                  sede: usuarioInscrito.sede,
+                  progreso: usuarioInscrito.progreso,
+                  certificado: usuarioInscrito.certificado,
+                };
+              }
+            );
 
             this.usuariosInscritosOriginal = [...this.usuariosInscritos];
             this.totalInscritos = this.usuariosInscritos.length;
@@ -508,7 +545,7 @@ function nuevoCursoComponente() {
 
             this.usuariosOriginalesDisponibles =
               this.usuariosOriginalesDisponibles.filter(
-                (usuario) => !inscritosSet.has(usuario.dni)
+                (usuario) => !inscritosMap.has(usuario.dni)
               );
             this.usuariosDisponibles = [...this.usuariosOriginalesDisponibles];
             this.personasEncontradas = this.usuariosDisponibles.length;
@@ -526,6 +563,22 @@ function nuevoCursoComponente() {
         (p) => p.id_usuario === dni
       );
       return progresoObj ? progresoObj.progreso : 0;
+    },
+    obtenerCertificadoDelUsuario(dni) {
+      const progresoObj = this.progresoUsuarios.find(
+        (p) => p.id_usuario === dni
+      );
+      if (progresoObj) {
+        if (
+          progresoObj.certificado != "0" &&
+          progresoObj.certificado != null &&
+          progresoObj.certificado != ""
+        ) {
+          return progresoObj.certificado;
+        }
+      }
+
+      return null;
     },
     async cambiarEstadoCurso() {
       this.curso.activo = this.curso.activo == 1 ? 0 : 1;
@@ -657,6 +710,7 @@ function nuevoCursoComponente() {
       tema.dropDownActivo = false;
       const nuevoOrden = tema.items.length + 1;
       this.claseSeleccionada.orden = nuevoOrden;
+      console.log(this.claseSeleccionada);
     },
     inicializarEditoresQuill() {
       this.$nextTick(() => {
@@ -727,6 +781,9 @@ function nuevoCursoComponente() {
           id_item: item.id_item,
           titulo: item.detalle.titulo,
           descripcion: item.detalle.descripcion,
+          tiempo_duracion: item.detalle.tiempo_duracion || null,
+          nota_minima_aprobatoria:
+            item.detalle.nota_minima_aprobatoria || null,
           preguntas: item.detalle.preguntas || [],
           activo: item.detalle.activo,
           orden: item.orden,
@@ -814,6 +871,22 @@ function nuevoCursoComponente() {
       }
     },
     agregarEvaluacionATema(tema) {
+
+      // Verifica si ya tiene una evaluación, un curso tiene solo una evaluacion por curso
+      // for (let tema of this.curso.temas) {
+      //   for (let item of tema.items) {
+      //     if (item.tipo === "evaluacion") {
+      //       this.$dispatch("abrir-modal", {
+      //         titulo: "Límite de evaluaciones alcanzado",
+      //         mensaje:
+      //           "Cada curso solo puede tener una evaluación. No se puede agregar otra evaluación.",
+      //         tipo: "info",
+      //       });
+      //       return;
+      //     }
+      //   }
+      // }
+      
       this.evaluacionSeleccionada.id_tema = tema.id_tema;
       this.modalEvaluacion = true;
       tema.dropDownActivo = false;
@@ -838,12 +911,14 @@ function nuevoCursoComponente() {
 
       if (
         !this.evaluacionSeleccionada.titulo ||
-        !this.evaluacionSeleccionada.descripcion
+        !this.evaluacionSeleccionada.descripcion ||
+        !this.evaluacionSeleccionada.tiempo_duracion ||
+        !this.evaluacionSeleccionada.nota_minima_aprobatoria
       ) {
         this.$dispatch("abrir-modal", {
           titulo: "Campos obligatorios",
           mensaje:
-            "Por favor, complete los campos de título y descripción de la evaluación, y como mínimo una pregunta.",
+            "Por favor, complete los campos de título, descripción, tiempo de duración y nota mínima aprobatoria de la evaluación.",
           tipo: "info",
         });
         return;

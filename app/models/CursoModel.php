@@ -218,7 +218,7 @@ class CursoModel
 
                 $itemsConDetalle = [];
                 foreach ($items as $item) {
-                    $sqlProgreso = "SELECT id_progreso , id_curso_usuario, id_item, completado FROM progreso_item WHERE id_curso_usuario = :id_curso_usuario AND id_item = :id_item";
+                    $sqlProgreso = "SELECT id_progreso , id_curso_usuario, id_item, completado, nota FROM progreso_item WHERE id_curso_usuario = :id_curso_usuario AND id_item = :id_item";
                     $stmtProgreso = $pdo->prepare($sqlProgreso);
                     $stmtProgreso->execute([
                         'id_curso_usuario' => $cursoUsuario['id_curso_usuario'],
@@ -226,6 +226,7 @@ class CursoModel
                     ]);
                     $progresoItem = $stmtProgreso->fetch(PDO::FETCH_ASSOC);
                     $item['completado'] = $progresoItem ? (int) $progresoItem['completado'] : 0;
+                    $item['nota'] = $progresoItem ? $progresoItem['nota'] : null;
 
                     if ($item['tipo'] === 'clase') {
                         $queryClase = "SELECT id_clase, titulo, descripcion, video, activo FROM clase WHERE id_clase = :id_clase AND activo = 1";
@@ -252,7 +253,7 @@ class CursoModel
                     }
 
                     if ($item['tipo'] === 'evaluacion') {
-                        $queryEvaluacion = "SELECT id_evaluacion, titulo, descripcion, activo FROM evaluacion WHERE id_evaluacion = :id_evaluacion AND activo = 1";
+                        $queryEvaluacion = "SELECT id_evaluacion, titulo, descripcion, tiempo_duracion, nota_minima_aprobatoria, activo FROM evaluacion WHERE id_evaluacion = :id_evaluacion AND activo = 1";
                         $stmtEvaluacion = $pdo->prepare($queryEvaluacion);
                         $stmtEvaluacion->execute(['id_evaluacion' => $item['id_referencia']]);
                         $evaluacion = $stmtEvaluacion->fetch(PDO::FETCH_ASSOC);
@@ -307,7 +308,7 @@ class CursoModel
         }
     }
 
-    public function crearNuevoCurso($datosCurso, $idsUsuarios)
+    public function crearNuevoCurso($datosCurso, $usuarios)
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
@@ -330,30 +331,36 @@ class CursoModel
                 'fecha_cierre' => $datosCurso['fecha_cierre']
             ]);
 
-            if (!empty($idsUsuarios) && is_array($idsUsuarios)) {
+
+            if (!empty($usuarios) && is_array($usuarios)) {
                 $values = [];
                 $params = [];
-                foreach ($idsUsuarios as $idUsuario) {
+                foreach ($usuarios as $usuario) {
                     $idCursoUsuario = generarIdUnico("CUU");
-                    $values[] = "(?, ?, ?, NOW(), 0, 1)";
+                    $values[] = "(?, ?, ?, NOW(), 0, 1, ?, ?, ?, ?)";
                     $params[] = $idCursoUsuario;
                     $params[] = $idCurso;
-                    $params[] = $idUsuario;
+                    $params[] = $usuario['id_usuario']; // ← FALTABA ESTO
+                    $params[] = isset($usuario['cargo']) ? $usuario['cargo'] : null;
+                    $params[] = isset($usuario['ccostos']) ? $usuario['ccostos'] : null;
+                    $params[] = isset($usuario['dcostos']) ? $usuario['dcostos'] : null;
+                    $params[] = isset($usuario['sede']) ? $usuario['sede'] : null;
                 }
                 if (!empty($values)) {
-                    $insertInscripcionQuery = "INSERT INTO curso_usuario (id_curso_usuario, id_curso, id_usuario, fecha_inicio, progreso, obligatorio) VALUES " . implode(", ", $values);
+                    $insertInscripcionQuery = "INSERT INTO curso_usuario 
+            (id_curso_usuario, id_curso, id_usuario, fecha_inicio, progreso, obligatorio, cargo, ccostos, dcostos, sede) 
+            VALUES " . implode(", ", $values);
                     $stmtInscripcion = $pdo->prepare($insertInscripcionQuery);
                     $stmtInscripcion->execute($params);
                 }
             }
-
             return $idCurso;
         } catch (Exception $e) {
             return null;
         }
     }
 
-    public function editarCurso($datosCurso, $idsUsuarios)
+    public function editarCurso($datosCurso, $usuarios)
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
@@ -381,9 +388,15 @@ class CursoModel
             $usuariosActuales = $stmtUsuariosActuales->fetchAll(PDO::FETCH_COLUMN, 0);
 
 
+            $idsUsuarios = array_map(function ($u) {
+                return $u['id_usuario'];
+            }, $usuarios);
+
             $idsUsuarios = is_array($idsUsuarios) ? $idsUsuarios : [];
             $usuariosAEliminar = array_diff($usuariosActuales, $idsUsuarios);
-            $usuariosAAgregar = array_diff($idsUsuarios, $usuariosActuales);
+            $usuariosAAgregar = array_filter($usuarios, function ($u) use ($usuariosActuales) {
+                return !in_array($u['id_usuario'], $usuariosActuales);
+            });
 
             if (!empty($usuariosAEliminar)) {
                 $inQuery = implode(',', array_fill(0, count($usuariosAEliminar), '?'));
@@ -393,15 +406,21 @@ class CursoModel
             }
 
             if (!empty($usuariosAAgregar)) {
-                $insertQuery = "INSERT INTO curso_usuario (id_curso_usuario, id_curso, id_usuario, fecha_inicio, progreso, obligatorio) VALUES ";
+                $insertQuery = "INSERT INTO curso_usuario (
+                    id_curso_usuario, id_curso, id_usuario, fecha_inicio, progreso, obligatorio, cargo, ccostos, dcostos, sede) 
+                    VALUES ";
                 $values = [];
                 $params = [];
-                foreach ($usuariosAAgregar as $idx => $idUsuario) {
+                foreach ($usuariosAAgregar as $idx => $usuario) {
                     $idCursoUsuario = generarIdUnico("CUU");
-                    $values[] = "(?, ?, ?, NOW(), 0, 1)";
+                    $values[] = "(?, ?, ?, NOW(), 0, 1, ?, ?, ?, ?)";
                     $params[] = $idCursoUsuario;
                     $params[] = $datosCurso['id_curso'];
-                    $params[] = $idUsuario;
+                    $params[] = $usuario['id_usuario']; // ← FALTABA ESTO
+                    $params[] = isset($usuario['cargo']) ? $usuario['cargo'] : null;
+                    $params[] = isset($usuario['ccostos']) ? $usuario['ccostos'] : null;
+                    $params[] = isset($usuario['dcostos']) ? $usuario['dcostos'] : null;
+                    $params[] = isset($usuario['sede']) ? $usuario['sede'] : null;
                 }
                 if (!empty($values)) {
                     $insertQuery .= implode(", ", $values);
@@ -428,15 +447,22 @@ class CursoModel
             $curso = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($curso) {
-                // Obtener usuarios inscritos
-                $queryUsuarios = "SELECT cu.id_usuario, cu.progreso
+                $queryUsuarios = "SELECT cu.id_usuario, cu.progreso, cu.certificado, cu.cargo, cu.ccostos, cu.dcostos, cu.sede
                                   FROM curso_usuario cu
                                   WHERE cu.id_curso = :id_curso";
                 $stmtUsuarios = $pdo->prepare($queryUsuarios);
                 $stmtUsuarios->execute(['id_curso' => $idCurso]);
                 $usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
                 $curso['usuariosInscritos'] = array_map(function ($u) {
-                    return $u['id_usuario'];
+                    return [
+                        'id_usuario' => $u['id_usuario'],
+                        'progreso' => $u['progreso'],
+                        'certificado' => $u['certificado'],
+                        'cargo' => $u['cargo'],
+                        'ccostos' => $u['ccostos'],
+                        'dcostos' => $u['dcostos'],
+                        'sede' => $u['sede']
+                    ];
                 }, $usuarios);
 
                 $curso['progresosUsuarios'] = $usuarios;
@@ -466,7 +492,7 @@ class CursoModel
                                 $stmtAnuncio->execute(['id_anuncio' => $item['id_referencia']]);
                                 $items[$j]['detalle'] = $stmtAnuncio->fetch(PDO::FETCH_ASSOC);
                             } elseif ($item['tipo'] === 'evaluacion') {
-                                $queryEvaluacion = "SELECT id_evaluacion, titulo, descripcion, activo FROM evaluacion WHERE id_evaluacion = :id_evaluacion";
+                                $queryEvaluacion = "SELECT id_evaluacion, titulo, descripcion, tiempo_duracion, nota_minima_aprobatoria, activo FROM evaluacion WHERE id_evaluacion = :id_evaluacion";
                                 $stmtEvaluacion = $pdo->prepare($queryEvaluacion);
                                 $stmtEvaluacion->execute(['id_evaluacion' => $item['id_referencia']]);
                                 $evaluacion = $stmtEvaluacion->fetch(PDO::FETCH_ASSOC);
@@ -751,17 +777,18 @@ class CursoModel
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
             $idEvaluacion = generarIdUnico("EVA");
-            $query = "INSERT INTO evaluacion (id_evaluacion, titulo, descripcion, activo) 
-                          VALUES (:id_evaluacion, :titulo, :descripcion, :activo)";
+            $query = "INSERT INTO evaluacion (id_evaluacion, titulo, descripcion, tiempo_duracion, nota_minima_aprobatoria  , activo) 
+                          VALUES (:id_evaluacion, :titulo, :descripcion, :tiempo_duracion, :nota_minima_aprobatoria, :activo)";
             $stmt = $pdo->prepare($query);
             $stmt->execute([
                 'id_evaluacion' => $idEvaluacion,
                 'titulo' => $datosEvaluacion['titulo'],
                 'descripcion' => $datosEvaluacion['descripcion'],
+                'tiempo_duracion' => $datosEvaluacion['tiempo_duracion'],
+                'nota_minima_aprobatoria' => $datosEvaluacion['nota_minima_aprobatoria'],
                 'activo' => $datosEvaluacion['activo']
             ]);
 
-            // Registrar en tema_item
             $idItem = generarIdUnico("ITEM");
             $queryItem = "INSERT INTO tema_item (id_item, id_tema, tipo, id_referencia, orden) 
                           VALUES (:id_item, :id_tema, :tipo, :id_referencia, :orden)";
@@ -774,7 +801,6 @@ class CursoModel
                 'orden' => $datosEvaluacion['orden']
             ]);
 
-            // Registrar preguntas y alternativas si existen
             if (isset($datosEvaluacion['preguntas']) && is_array($datosEvaluacion['preguntas'])) {
                 foreach ($datosEvaluacion['preguntas'] as $preguntaData) {
                     $idPregunta = generarIdUnico("PRE");
@@ -830,12 +856,14 @@ class CursoModel
     {
         $pdo = ConexionCapacitaciones::getInstancia()->getConexion();
         try {
-            $query = "UPDATE evaluacion SET titulo = :titulo, descripcion = :descripcion, activo = :activo WHERE id_evaluacion = :id_evaluacion";
+            $query = "UPDATE evaluacion SET titulo = :titulo, descripcion = :descripcion, tiempo_duracion = :tiempo_duracion, nota_minima_aprobatoria=:nota_minima_aprobatoria, activo = :activo WHERE id_evaluacion = :id_evaluacion";
             $stmt = $pdo->prepare($query);
             $stmt->execute([
                 'id_evaluacion' => $datosEvaluacion['id_evaluacion'],
                 'titulo' => $datosEvaluacion['titulo'],
                 'descripcion' => $datosEvaluacion['descripcion'],
+                'tiempo_duracion' => $datosEvaluacion['tiempo_duracion'],
+                'nota_minima_aprobatoria' => $datosEvaluacion['nota_minima_aprobatoria'],
                 'activo' => $datosEvaluacion['activo']
             ]);
 
@@ -848,7 +876,6 @@ class CursoModel
                 ]);
             }
 
-            // Eliminar preguntas y alternativas relacionadas a la evaluación
             $queryEliminarPreguntas = "SELECT id_pregunta FROM pregunta WHERE id_evaluacion = :id_evaluacion";
             $stmtEliminarPreguntas = $pdo->prepare($queryEliminarPreguntas);
             $stmtEliminarPreguntas->execute(['id_evaluacion' => $datosEvaluacion['id_evaluacion']]);
@@ -866,7 +893,6 @@ class CursoModel
                 $stmtEliminarPreguntasFinal->execute(['id_evaluacion' => $datosEvaluacion['id_evaluacion']]);
             }
 
-            // Registrar nuevas preguntas y alternativas si existen
             if (isset($datosEvaluacion['preguntas']) && is_array($datosEvaluacion['preguntas'])) {
                 foreach ($datosEvaluacion['preguntas'] as $preguntaData) {
                     $idPregunta = generarIdUnico("PRE");

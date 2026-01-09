@@ -123,10 +123,10 @@ class CursosController
             $datosCurso = null;
         }
 
-        if (!empty($_POST['ids_usuarios'])) {
-            $idUsuarios = json_decode($_POST['ids_usuarios'], true);
+        if (!empty($_POST['usuarios'])) {
+            $usuarios = json_decode($_POST['usuarios'], true);
         } else {
-            $idUsuarios = [];
+            $usuarios = [];
         }
 
         if (!$datosCurso) {
@@ -149,9 +149,9 @@ class CursosController
         $datosCurso['id_autor'] = $sesion->data->dni;
 
         if ($modoEdicion) {
-            $idCurso = $this->cursoModel->editarCurso($datosCurso, $idUsuarios);
+            $idCurso = $this->cursoModel->editarCurso($datosCurso, $usuarios);
         } else {
-            $idCurso = $this->cursoModel->crearNuevoCurso($datosCurso, $idUsuarios);
+            $idCurso = $this->cursoModel->crearNuevoCurso($datosCurso, $usuarios);
         }
 
         if ($idCurso) {
